@@ -5,59 +5,54 @@
 namespace flatland
 {
     /*
+     * Flatlander Implementation
+     */
+    Flatlander::Flatlander(std::string n, int s, Colour c) : name{n}, size{s}, colour{c} {}
+    std::string Flatlander::getName() { return name; }
+    void Flatlander::setName(std::string n) { name = n; }
+    int Flatlander::getSize() { return size; }
+    void Flatlander::setSize(int s) { size = clamp(s, MAX_SIZE, MIN_SIZE); }
+    Colour Flatlander::getColour() { return colour; }
+
+    /*
      * Segment Implementation
      */
-    Segment::Segment(std::string n, int s, Colour c) : name{n}, size{s}, colour{c}
+    Segment::Segment(std::string n, int s, Colour c) : Flatlander(n, s, c)
     {
         ++numberOfSegments;
     }
 
-    std::string Segment::getName() { return name; }
-    void Segment::setName(std::string n) { name = n; }
-    int Segment::getSize() { return size; }
-    void Segment::setSize(int s) { size = clamp(s, MAX_SIZE, MIN_SIZE); }
-    Colour Segment::getColor() { return colour; }
     void Segment::present()
     {
-        std::cout << "Greeting from Segment -> " << this->name << "with size -> " << this->size << " with colour -> " << convertColourEnumToText(colour) << std::endl;
+        std::cout << "Greeting from Segment -> " << getName() << "with size -> " << getSize() << " with colour -> " << convertColourEnumToText(getColour()) << std::endl;
     }
 
     /*
      * Isocele Implementation
      */
-    Isocele::Isocele(std::string n, int s, Colour c) : name{n}, size{s}, colour{c}
+    Isocele::Isocele(std::string n, int s, Colour c) : Flatlander(n, s, c)
     {
         ++numberOfIsocele;
     }
 
-    std::string Isocele::getName() { return name; }
-    void Isocele::setName(std::string n) { name = n; }
-    int Isocele::getSize() { return size; }
-    void Isocele::setSize(int s) { size = clamp(s, MAX_SIZE, MIN_SIZE); }
-    Colour Isocele::getColour() { return colour; }
     int Isocele::getPeakAngle() { return peakAngle; }
     void Isocele::present()
     {
-        std::cout << "Greeting from Isocele -> " << this->name << "with size -> " << this->size << " with colour -> " << convertColourEnumToText(colour) << std::endl;
+        std::cout << "Greeting from Isocele -> " << getName() << "with size -> " << getSize() << " with colour -> " << convertColourEnumToText(getColour()) << std::endl;
     }
 
     /*
      * Polygon Implementation
      */
-    Polygon::Polygon(std::string n, int s, Colour c) : name{n}, size{s}, colour{c}
+    Polygon::Polygon(std::string n, int s, Colour c) : Flatlander(n, s, c)
     {
         ++numberOfPolygon;
     }
 
-    std::string Polygon::getName() { return name; }
-    void Polygon::setName(std::string n) { name = n; }
-    int Polygon::getSize() { return size; }
-    void Polygon::setSize(int s) { size = clamp(s, MAX_SIZE, MIN_SIZE); }
-    Colour Polygon::getColour() { return colour; }
     int Polygon::getNbSides() { return nbSides; }
     void Polygon::present()
     {
-        std::cout << "Greetings from Polygon -> " << this->name << " with size -> " << this->size << " with colour -> " << convertColourEnumToText(colour) << std::endl;
+        std::cout << "Greetings from Polygon -> " << getName() << " with size -> " << getSize() << " with colour -> " << convertColourEnumToText(getColour()) << std::endl;
     }
 
     /*
@@ -78,5 +73,9 @@ namespace flatland
         std::cout << "Number of Isocele -> " << numberOfIsocele << std::endl;
         std::cout << "Number of Polygon -> " << numberOfPolygon << std::endl;
     }
+
+    /*
+     * Family Implementation
+     */
 
 } // namespace flatland

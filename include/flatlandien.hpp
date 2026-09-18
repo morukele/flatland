@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <optional>
 
 #include "util.hpp"
 
@@ -19,61 +20,53 @@ namespace flatland
 
     void printStatistics();
 
-    class Segment
+    class Flatlander
+    {
+
+    public:
+        friend class RobotSurgeon;
+        Flatlander(std::string n, int s, Colour c);
+        virtual std::string getName();
+        virtual void setName(std::string n);
+        virtual int getSize();
+        virtual void setSize(int s);
+        virtual Colour getColour();
+
+    private:
+        std::string name;
+        int size;
+        Colour colour;
+    };
+
+    class Segment : public Flatlander
     {
     public:
         friend class RobotSurgeon;
         Segment(std::string n, int s, Colour c);
-        std::string getName();
-        void setName(std::string n);
-        int getSize();
-        void setSize(int s);
-        Colour getColor();
         void present();
-
-    private:
-        std::string name;
-        int size;
-        Colour colour;
     };
 
-    class Isocele
+    class Isocele : public Flatlander
     {
     public:
         friend class RobotSurgeon;
         Isocele(std::string n, int s, Colour c);
-        std::string getName();
-        void setName(std::string n);
-        int getSize();
-        void setSize(int s);
-        Colour getColour();
         int getPeakAngle();
         void present();
 
     private:
-        std::string name;
-        int size;
-        Colour colour;
         int peakAngle;
     };
 
-    class Polygon
+    class Polygon : public Flatlander
     {
     public:
         friend class RobotSurgeon;
         Polygon(std::string n, int s, Colour c);
-        std::string getName();
-        void setName(std::string n);
-        int getSize();
-        void setSize(int s);
-        Colour getColour();
         int getNbSides();
         void present();
 
     private:
-        std::string name;
-        int size;
-        Colour colour;
         int nbSides;
     };
 

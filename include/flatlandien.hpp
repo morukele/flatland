@@ -1,67 +1,82 @@
-#include <iostream>
+#pragma once
+
 #include <string>
+
 #include "util.hpp"
 
-class Segment
+namespace flatland
 {
-public:
-    Segment(std::string n, int s, Colour c) : name{n}, size{s}, colour{c} {}
-    std::string getName() { return name; }
-    void setName(std::string n) { name = n; }
-    int getSize() { return size; }
-    void setSize(int s) { size = s; }
-    Colour getColor() { return colour; }
-    void present()
+    class Segment
     {
-        std::cout << "Greeting from Segment -> " << this->name << "with size -> " << this->size << std::endl;
-    }
+    public:
+        friend class RobotSurgeon;
+        Segment(std::string n, int s, Colour c);
+        std::string getName();
+        void setName(std::string n);
+        int getSize();
+        void setSize(int s);
+        Colour getColor();
+        void present();
 
-private:
-    std::string name;
-    int size;
-    Colour colour;
-};
+    private:
+        std::string name;
+        int size;
+        Colour colour;
+    };
 
-class Isocele
-{
-public:
-    Isocele(std::string n, int s, Colour c) : name{n}, size{s}, colour{c} {}
-    std::string getName() { return name; }
-    void setName(std::string n) { name = n; }
-    int getSize() { return size; }
-    void setSize(int s) { size = s; }
-    Colour getColour() { return colour; }
-    int getPeakAngle() { return peakAngle; }
-    void present()
+    class Isocele
     {
-        std::cout << "Greeting from Isocele -> " << this->name << "with size -> " << this->size << std::endl;
-    }
+    public:
+        friend class RobotSurgeon;
+        Isocele(std::string n, int s, Colour c);
+        std::string getName();
+        void setName(std::string n);
+        int getSize();
+        void setSize(int s);
+        Colour getColour();
+        int getPeakAngle();
+        void present();
 
-private:
-    std::string name;
-    int size;
-    Colour colour;
-    int peakAngle;
-};
+    private:
+        std::string name;
+        int size;
+        Colour colour;
+        int peakAngle;
+    };
 
-class Polygone
-{
-public:
-    Polygone(std::string n, int s, Colour c) : name{n}, size{s}, colour{c} {}
-    std::string getName() { return name; }
-    void setName(std::string n) { name = n; }
-    int getSize() { return size; }
-    void setSize(int s) { size = s; }
-    Colour getColour() { return colour; }
-    int getNbSides() { return nbSides; }
-    void present()
+    class Polygone
     {
-        std::cout << "Greetings from Polygone -> " << this->name << "with size -> " << this->size << std::endl;
-    }
+    public:
+        friend class RobotSurgeon;
+        Polygone(std::string n, int s, Colour c);
+        std::string getName();
+        void setName(std::string n);
+        int getSize();
+        void setSize(int s);
+        Colour getColour();
+        int getNbSides();
+        void present();
 
-private:
-    std::string name;
-    int size;
-    Colour colour;
-    int nbSides;
-};
+    private:
+        std::string name;
+        int size;
+        Colour colour;
+        int nbSides;
+    };
+
+    class RobotSurgeon
+    {
+    public:
+        RobotSurgeon(std::string n);
+        std::string getName();
+        void modifyColour(Segment &s, Colour c);
+        void modifyColour(Isocele &i, Colour c);
+        void modifyColour(Polygone &p, Colour c);
+        void modifyPeakAngle(Isocele &i, int a);
+        void modifyNbSides(Polygone &p, int n);
+
+    private:
+        std::string name;
+    };
+
+} // namespace flatland

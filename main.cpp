@@ -11,7 +11,7 @@ void Q1()
 
     flatland::Segment seg(std::string{"segment"}, 10, flatland::Colour::RED);
     flatland::Isocele iso(std::string{"Isocele"}, 20, flatland::Colour::BLUE);
-    flatland::Polygone poly(std::string{"Polygone"}, 15, flatland::Colour::GREEN);
+    flatland::Polygon poly(std::string{"Polygon"}, 15, flatland::Colour::GREEN);
 
     seg.present();
     iso.present();
@@ -29,7 +29,7 @@ void Q2()
 
     flatland::Segment seg(std::string{"segment"}, 10, flatland::Colour::RED);
     flatland::Isocele iso(std::string{"Isocele"}, 20, flatland::Colour::BLUE);
-    flatland::Polygone poly(std::string{"Polygone"}, 15, flatland::Colour::GREEN);
+    flatland::Polygon poly(std::string{"Polygon"}, 15, flatland::Colour::GREEN);
     flatland::RobotSurgeon surgeon(std::string{"Dr BES"});
 
     seg.present();
@@ -42,9 +42,13 @@ void Q2()
     surgeon.modifyColour(seg, flatland::Colour::WHITE);
     surgeon.modifyColour(iso, flatland::Colour::YELLOW);
 
+    poly.setSize(200);
+    iso.setSize(4);
+    seg.setSize(50);
+
     poly.present();
     iso.present();
-    poly.present();
+    seg.present();
 
     std::cout << std::endl;
 }
@@ -53,5 +57,8 @@ int main()
 {
     Q1();
     Q2();
+
+    flatland::printStatistics();
+
     return 0;
 }

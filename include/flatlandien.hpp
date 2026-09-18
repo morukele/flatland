@@ -6,6 +6,19 @@
 
 namespace flatland
 {
+    const static int MIN_SIZE = 5;
+    const static int MAX_SIZE = 100;
+    const static int MIN_ANGLE = 20;
+    const static int MAX_ANGLE = 60;
+    const static int MIN_nbSIZE = 4;
+    const static int MAX_nbSIZE = 20;
+
+    static int numberOfSegments{0}; // use static here so that the variables last the whole lifecycle of the program.
+    static int numberOfIsocele{0};
+    static int numberOfPolygon{0};
+
+    void printStatistics();
+
     class Segment
     {
     public:
@@ -44,11 +57,11 @@ namespace flatland
         int peakAngle;
     };
 
-    class Polygone
+    class Polygon
     {
     public:
         friend class RobotSurgeon;
-        Polygone(std::string n, int s, Colour c);
+        Polygon(std::string n, int s, Colour c);
         std::string getName();
         void setName(std::string n);
         int getSize();
@@ -71,9 +84,9 @@ namespace flatland
         std::string getName();
         void modifyColour(Segment &s, Colour c);
         void modifyColour(Isocele &i, Colour c);
-        void modifyColour(Polygone &p, Colour c);
+        void modifyColour(Polygon &p, Colour c);
         void modifyPeakAngle(Isocele &i, int a);
-        void modifyNbSides(Polygone &p, int n);
+        void modifyNbSides(Polygon &p, int n);
 
     private:
         std::string name;

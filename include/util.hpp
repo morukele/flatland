@@ -42,4 +42,13 @@ namespace flatland
             return "UNKNOWN";
         }
     }
+
+    static int clamp(int value, int max, int min)
+    {
+        if (value < min)
+            return min;
+        if (value > max)
+            return min;
+        return value;
+    }
 } // namespace flatland

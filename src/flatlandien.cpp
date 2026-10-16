@@ -1,5 +1,4 @@
 #include "flatlandien.hpp"
-
 #include <iostream>
 
 namespace flatland
@@ -61,9 +60,7 @@ namespace flatland
     RobotSurgeon::RobotSurgeon(std::string n) : name{n} {}
 
     std::string RobotSurgeon::getName() { return name; }
-    void RobotSurgeon::modifyColour(Segment &s, Colour c) { s.colour = c; }
-    void RobotSurgeon::modifyColour(Isocele &i, Colour c) { i.colour = c; }
-    void RobotSurgeon::modifyColour(Polygon &p, Colour c) { p.colour = c; }
+    void RobotSurgeon::modifyColour(Flatlander &flatlander, Colour c) { flatlander.colour = c; }
     void RobotSurgeon::modifyPeakAngle(Isocele &i, int a) { i.peakAngle = clamp(a, MAX_ANGLE, MIN_ANGLE); }
     void RobotSurgeon::modifyNbSides(Polygon &p, int n) { p.nbSides = clamp(n, MAX_nbSIZE, MIN_nbSIZE); }
 

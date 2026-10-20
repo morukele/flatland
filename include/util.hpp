@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <flatlandien.hpp>
+#include <random>
 #include <string>
 
 namespace flatland
@@ -50,5 +52,26 @@ namespace flatland
         if (value > max)
             return min;
         return value;
+    }
+
+    /**
+     * A function to return a random generator.
+     * @return std::mt19937
+     */
+    inline std::mt19937 &rng()
+    {
+        static std::mt19937 gen{std::random_device{}()};
+        return gen;
+    }
+
+    /**
+     * A function to generate a random number between an upper and a lower limit
+     * @param lo lower limit
+     * @param hi upper limit
+     * @return returns a random int between the low and upper limit inclusive
+     */
+    inline int randInt(const int lo, const int hi)
+    {
+        return std::uniform_int_distribution(lo, hi)(rng());
     }
 } // namespace flatland

@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 #include <iostream>
+#include <vector>
+#include <algorithm>
 #include "util.hpp"
 
 namespace flatland
@@ -54,7 +56,7 @@ namespace flatland
 
         virtual void present() const = 0;       // Abstract present in Flatlander
 
-        static std::unique_ptr<Flatlander> newFlatlander(const Segment &mother, const FlatlanderMale &father);
+        static Flatlander* newFlatlander(const Segment &mother, const FlatlanderMale &father);
 
     private:
         std::string name{};
@@ -133,29 +135,30 @@ namespace flatland
     };
 
     // ----------------------------------------------------------------------------
-    // SingleChildFamily: aggegates a family, does not own any member of the family
+    // Family: aggregates a family, does not own any member of the family
     // ----------------------------------------------------------------------------
     // The family owns raw, non-owning pointers.
     // The creator of the family members is responsible for their life cycle management.
-    class SingleChildFamily
+    // NB: The children vector is owned by the family, but the individual child Flatlander is not owned by the family.
+    class Family
     {
     public:
-        explicit SingleChildFamily(FlatlanderMale *f = nullptr, Segment *m = nullptr);
+        explicit Family(FlatlanderMale *f = nullptr, Segment *m = nullptr);
 
+        size_t getChildCount() const;
         std::string getName() const;
         void setName(const std::string &n);
         FlatlanderMale* getFather() const;
         void setFather(FlatlanderMale *f);
         Segment *getMother() const;
         void setMother(Segment *m);
-        Flatlander *getChild() const;
-        bool setChild(Flatlander *c);
-        // void divorce(const FlatlanderMale &initiator);
-        // void divorce(const Segment &initiator);
+        Flatlander *findChild(const std::string& n) const;
+        const std::vector<Flatlander*> &getChildren() const;
+        bool adoptChild(Flatlander *c);
 
         // Creates a child and links it to the family, ownership is transferred to the caller.
         // The function warns the caller about ignoring the result.
-        [[nodiscard]]std::unique_ptr<Flatlander> newChild();
+        [[nodiscard]]Flatlander* newChild();
 
         void present() const;
 
@@ -163,7 +166,7 @@ namespace flatland
         std::string name{};
         FlatlanderMale *father;
         Segment *mother;
-        Flatlander *child;
+        std::vector<Flatlander*> children{};
     };
 
     //---------------------------------------------------------------

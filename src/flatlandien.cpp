@@ -35,7 +35,7 @@ namespace flatland
      * Segment Implementation
      */
     Segment::Segment(const std::string& n, const int s, const Colour c)
-        : Flatlander(n, s, c)
+        : Flatlander(n, clamp(s, MAX_SIZE, MIN_SIZE), c)
     {
         ++numberOfSegments;
     }
@@ -50,7 +50,7 @@ namespace flatland
     /**
      * Isocele Implementation
      */
-    Isocele::Isocele(const std::string& n, int s, Colour c) : FlatlanderMale(n, s, c)
+    Isocele::Isocele(const std::string& n, int s, Colour c) : FlatlanderMale(n, clamp(s, MAX_SIZE, MIN_SIZE), c)
     {
         peakAngle = randInt(MIN_ANGLE, MAX_ANGLE);
         ++numberOfIsocele;
@@ -68,7 +68,9 @@ namespace flatland
     /**
      * Polygon Implementation
      */
-    Polygon::Polygon(const std::string& n, int s, Colour c, int sides) : FlatlanderMale(n, s, c), nbSides{sides}
+    Polygon::Polygon(const std::string& n, int s, Colour c, int sides) :
+        FlatlanderMale(n, clamp(s, MAX_SIZE, MIN_SIZE), c),
+        nbSides{clamp(sides, MAX_NB_SIZE, MIN_NB_SIZE)}
     {
         ++numberOfPolygon;
     }
@@ -104,26 +106,26 @@ namespace flatland
     /**
      * Family Implementation
      */
-    SingleChildFamily::SingleChildFamily(FlatlanderMale* f, Segment* m) : father{f}, mother{m}, child(nullptr)
+    Family::Family(FlatlanderMale* f, Segment* m) : father{f}, mother{m}
     {
     }
 
-    std::string SingleChildFamily::getName() const
+    std::string Family::getName() const
     {
         return name;
     }
 
-    void SingleChildFamily::setName(const std::string& n)
+    void Family::setName(const std::string& n)
     {
         name = n;
     }
 
-    FlatlanderMale* SingleChildFamily::getFather() const
+    FlatlanderMale* Family::getFather() const
     {
         return father;
     }
 
-    void SingleChildFamily::setFather(FlatlanderMale* f)
+    void Family::setFather(FlatlanderMale* f)
     {
         // check for null input passed in
         if (f != nullptr && father == nullptr)
@@ -132,16 +134,16 @@ namespace flatland
         }
         else
         {
-            std::cerr << "Father is already set or null input passed in" << std::endl;
+            std::cout << "Father is already set or null input passed in" << std::endl;
         }
     }
 
-    Segment* SingleChildFamily::getMother() const
+    Segment* Family::getMother() const
     {
         return mother;
     }
 
-    void SingleChildFamily::setMother(Segment* m)
+    void Family::setMother(Segment* m)
     {
         if (m != nullptr && mother == nullptr)
         {
@@ -149,25 +151,48 @@ namespace flatland
         }
         else
         {
-            std::cerr << "Mother is already se or null input passed int" << std::endl;
+            std::cout << "Mother is already se or null input passed int" << std::endl;
         }
     }
 
-    Flatlander* SingleChildFamily::getChild() const
+    Flatlander* Family::findChild(const std::string& n) const
     {
-        return child;
-    }
-
-    bool SingleChildFamily::setChild(Flatlander* c)
-    {
-        // TODO: check if null input passed in
-        if (child != nullptr)
+        for (const auto& c : children)
         {
-            std::cerr << "Child already exists in family" << std::endl;
-            return false; // child already exists
+            if (c->getName() == n)
+            {
+                return c;
+            }
         }
-        child = c;
-        return true; // setting child was successful
+
+        // Could not find a child with the name
+        return nullptr;
+    }
+
+    const std::vector<Flatlander*>& Family::getChildren() const
+    {
+        return children;
+    }
+
+    bool Family::adoptChild(Flatlander* c)
+    {
+        if (c == nullptr)
+        {
+            std::cout << "Family::adoptChild() called with null child" << std::endl;
+            return false;
+        }
+
+        for (const auto& child : children)
+        {
+            if (child == c)
+            {
+                std::cout << "Child already adopted to this family" << std::endl;
+                return false;
+            }
+        }
+
+        children.push_back(c);
+        return true;
     }
 
     /**
@@ -175,56 +200,61 @@ namespace flatland
      * it sets the child in the family and then returns the child object.
      * @return A unique pointer to the new child object
      */
-    std::unique_ptr<Flatlander> SingleChildFamily::newChild()
+    Flatlander* Family::newChild()
     {
-        // A dead flatlander cannot reproduce
-        if (!father->isAlive() || !mother->isAlive())
-        {
-            throw std::logic_error("A dead Flatlander cannot reproduce");
-        }
-
         // less than two parents
         if (father == nullptr || mother == nullptr)
         {
             throw std::logic_error("Single parent cannot produce child");
         }
-        // if child exists
-        if (child != nullptr)
-        {
-            throw std::logic_error("Cannot have more than one child");
-        }
 
+        // A dead flatlander cannot reproduce
+        if (!father->isAlive() || !mother->isAlive())
+        {
+            throw std::logic_error("A dead Flatlander cannot reproduce");
+        }
+        children.reserve(children.size() + 1); // Reserving capacity for one more child object
         auto res = Flatlander::newFlatlander(*mother, *father);
-        child = res.get();
+        children.push_back(res);
 
         return res;
     }
 
-    void SingleChildFamily::present() const
+    size_t Family::getChildCount() const
+    {
+        return children.size();
+    }
+
+    void Family::present() const
     {
         std::cout << std::endl;
         std::cout << "======= Family details =======" << std::endl;
         presentMember("Father", father);
         presentMember("Mother", mother);
-        presentMember("Child", child);
+        std::cout << "Number of children: " << getChildCount() << std::endl;
+        for (const auto& c : children)
+        {
+            presentMember("Child", c);
+        }
     }
 
     /**
      * Creates a new flatlander from two parents while respecting the generation rules
      * @param mother: Always a segment
      * @param father: Could be an isosceles or a polygone but never a segment
-     * @return A unique pointer to a new flatlander.
+     * @return A raw pointer to a new flatlander.
      */
-    std::unique_ptr<Flatlander> Flatlander::newFlatlander(const Segment& mother, const FlatlanderMale& father)
+    Flatlander* Flatlander::newFlatlander(const Segment& mother, const FlatlanderMale& father)
     {
-        const std::string name = mother.getName() + "-" + father.getName(); // compound name from parents
-        int size = clamp((mother.getSize() + father.getSize()) / 2, MIN_SIZE, MAX_SIZE);
+        // compound name from parents with a random number attached
+        const std::string name = mother.getName() + "-" + father.getName() + std::to_string(randInt(1, 1'000'000));
+        int size = clamp((mother.getSize() + father.getSize()) / 2, MAX_SIZE, MIN_SIZE);
         Colour colour = randInt(0, 1) == 0 ? mother.getColour() : father.getColour();
 
         // 50% female -> Segment
         if (randInt(0, 1) == 0)
         {
-            return std::make_unique<Segment>(name, size, colour);
+            return new Segment(name, size, colour);
         }
 
         // Male depending on the father type
@@ -232,13 +262,13 @@ namespace flatland
         {
             if (randInt(0, 1) == 0)
             {
-                return std::make_unique<Isocele>(name, size, colour); // should be an isoceles triangle
+                return new Isocele(name, size, colour); // should be an isoceles triangle
             }
 
-            return std::make_unique<Polygon>(name, size, colour, 4); // should be a square
+            return new Polygon(name, size, colour, 4); // should be a square
         }
 
         // Father is Polygon -> child is a polygon
-        return std::make_unique<Polygon>(name, size, colour, randInt(MIN_NB_SIZE, MAX_NB_SIZE));
+        return new Polygon(name, size, colour, randInt(MIN_NB_SIZE, MAX_NB_SIZE));
     }
 } // namespace flatland

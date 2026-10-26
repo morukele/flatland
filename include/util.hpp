@@ -18,6 +18,7 @@ namespace flatland
         PURPLE
     };
 
+
     /*
      * A function to covert the Enum to a string.
      * NB: it does not modify the colour value
@@ -73,5 +74,11 @@ namespace flatland
     inline int randInt(const int lo, const int hi)
     {
         return std::uniform_int_distribution(lo, hi)(rng());
+    }
+
+    // A function that returns a random enum variant
+    inline Colour randomColour()
+    {
+        return static_cast<Colour>(randInt(0, 6));
     }
 } // namespace flatland

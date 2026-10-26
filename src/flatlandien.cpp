@@ -10,7 +10,8 @@ namespace flatland
     {
     }
 
-    Flatlander::Flatlander(const std::string& n, const int s, const Colour c) : name{n}, size{s}, colour{c}
+    Flatlander::Flatlander(const std::string& n, const int s, const Colour c)
+        : name{n}, size{s}, colour{c}
     {
     }
 
@@ -19,6 +20,16 @@ namespace flatland
     int Flatlander::getSize() const { return size; }
     void Flatlander::setSize(const int s) { size = clamp(s, MAX_SIZE, MIN_SIZE); }
     Colour Flatlander::getColour() const { return colour; }
+    void Flatlander::kill() { alive = false; }
+    bool Flatlander::isAlive() const { return alive; }
+
+    void Flatlander::present() const
+    {
+        std::cout << getName() << " (size " << getSize() << ", "
+            << (isAlive() ? "alive" : "dead")
+            << ", " << convertColourEnumToText(getColour())
+            << ")";
+    }
 
     /**
      * Segment Implementation
@@ -31,15 +42,17 @@ namespace flatland
 
     void Segment::present() const
     {
-        std::cout << "Greeting from Segment -> " << getName() << "with size -> " << getSize() << " with colour -> " <<
-            convertColourEnumToText(getColour()) << std::endl;
+        std::cout << "[Segment] -> ";
+        Flatlander::present();
+        std::cout << std::endl;
     }
 
     /**
      * Isocele Implementation
      */
-    Isocele::Isocele(const std::string& n, int s, Colour c) : Father(n, s, c)
+    Isocele::Isocele(const std::string& n, int s, Colour c) : FlatlanderMale(n, s, c)
     {
+        peakAngle = randInt(MIN_ANGLE, MAX_ANGLE);
         ++numberOfIsocele;
     }
 
@@ -47,14 +60,15 @@ namespace flatland
 
     void Isocele::present() const
     {
-        std::cout << "Greeting from Isocele -> " << getName() << "with size -> " << getSize() << " with colour -> " <<
-            convertColourEnumToText(getColour()) << std::endl;
+        std::cout << "[Isocele, peak angle " << getPeakAngle() << "] -> ";
+        Flatlander::present();
+        std::cout << std::endl;
     }
 
     /**
      * Polygon Implementation
      */
-    Polygon::Polygon(const std::string& n, int s, Colour c, int sides) : Father(n, s, c), nbSides{sides}
+    Polygon::Polygon(const std::string& n, int s, Colour c, int sides) : FlatlanderMale(n, s, c), nbSides{sides}
     {
         ++numberOfPolygon;
     }
@@ -63,8 +77,9 @@ namespace flatland
 
     void Polygon::present() const
     {
-        std::cout << "Greetings from Polygon -> " << getName() << " with size -> " << getSize() << " with colour -> " <<
-            convertColourEnumToText(getColour()) << std::endl;
+        std::cout << "[Polygon, " << getNbSides() << " sides] -> ";
+        Flatlander::present();
+        std::cout << std::endl;
     }
 
     /**
@@ -89,11 +104,26 @@ namespace flatland
     /**
      * Family Implementation
      */
-    SingleChildFamily::SingleChildFamily(Father* f, Segment* m) : father{f}, mother{m}, child(nullptr)
+    SingleChildFamily::SingleChildFamily(FlatlanderMale* f, Segment* m) : father{f}, mother{m}, child(nullptr)
     {
     }
 
-    void SingleChildFamily::setFather(Father* f)
+    std::string SingleChildFamily::getName() const
+    {
+        return name;
+    }
+
+    void SingleChildFamily::setName(const std::string& n)
+    {
+        name = n;
+    }
+
+    FlatlanderMale* SingleChildFamily::getFather() const
+    {
+        return father;
+    }
+
+    void SingleChildFamily::setFather(FlatlanderMale* f)
     {
         // check for null input passed in
         if (f != nullptr && father == nullptr)
@@ -106,6 +136,11 @@ namespace flatland
         }
     }
 
+    Segment* SingleChildFamily::getMother() const
+    {
+        return mother;
+    }
+
     void SingleChildFamily::setMother(Segment* m)
     {
         if (m != nullptr && mother == nullptr)
@@ -116,6 +151,11 @@ namespace flatland
         {
             std::cerr << "Mother is already se or null input passed int" << std::endl;
         }
+    }
+
+    Flatlander* SingleChildFamily::getChild() const
+    {
+        return child;
     }
 
     bool SingleChildFamily::setChild(Flatlander* c)
@@ -137,6 +177,12 @@ namespace flatland
      */
     std::unique_ptr<Flatlander> SingleChildFamily::newChild()
     {
+        // A dead flatlander cannot reproduce
+        if (!father->isAlive() || !mother->isAlive())
+        {
+            throw std::logic_error("A dead Flatlander cannot reproduce");
+        }
+
         // less than two parents
         if (father == nullptr || mother == nullptr)
         {
@@ -149,7 +195,7 @@ namespace flatland
         }
 
         auto res = Flatlander::newFlatlander(*mother, *father);
-        setChild(res.get());
+        child = res.get();
 
         return res;
     }
@@ -157,10 +203,10 @@ namespace flatland
     void SingleChildFamily::present() const
     {
         std::cout << std::endl;
-        std::cout << "======= Printing family details =======" << std::endl;
-        std::cout << "Father name -> " << father->getName() << std::endl;
-        std::cout << "Mother name -> " << mother->getName() << std::endl;
-        std::cout << "Child name -> " << child->getName() << std::endl;
+        std::cout << "======= Family details =======" << std::endl;
+        presentMember("Father", father);
+        presentMember("Mother", mother);
+        presentMember("Child", child);
     }
 
     /**
@@ -169,7 +215,7 @@ namespace flatland
      * @param father: Could be an isosceles or a polygone but never a segment
      * @return A unique pointer to a new flatlander.
      */
-    std::unique_ptr<Flatlander> Flatlander::newFlatlander(const Segment& mother, const Father& father)
+    std::unique_ptr<Flatlander> Flatlander::newFlatlander(const Segment& mother, const FlatlanderMale& father)
     {
         const std::string name = mother.getName() + "-" + father.getName(); // compound name from parents
         int size = clamp((mother.getSize() + father.getSize()) / 2, MIN_SIZE, MAX_SIZE);

@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <string>
-
+#include <iostream>
 #include "util.hpp"
 
 namespace flatland
@@ -28,7 +28,7 @@ namespace flatland
     // Forward declarations
     // ----------------------------------------------------------
     class Segment;
-    class Father;
+    class FlatlanderMale;
 
     // ------------------------------------------------------------------
     // Flatlander: Abstract base class for all organisms in the universe
@@ -49,26 +49,30 @@ namespace flatland
         void setSize(int s);
         Colour getColour() const;
 
+        void kill();
+        bool isAlive() const;
+
         virtual void present() const = 0;       // Abstract present in Flatlander
 
-        static std::unique_ptr<Flatlander> newFlatlander(const Segment &mother, const Father &father);
+        static std::unique_ptr<Flatlander> newFlatlander(const Segment &mother, const FlatlanderMale &father);
 
     private:
         std::string name{};
         int size{0};
         Colour colour{};
+        bool alive{true}; // A newly constructed flatlander will always be alive
     };
 
     // ------------------------------------------------------
     // Father: an abstract representation of an adult male Flatlander (Polygone or Isocele)
     // TODO: consider changing to a generic male class that can be applied to children
     // ------------------------------------------------------
-    class Father : public Flatlander
+    class FlatlanderMale : public Flatlander
     {
     protected:
         // using protected here so that only subclasses can access the data.
         // It forwards the details to flatlander
-        Father(const std::string &n, int s, Colour c) : Flatlander(n, s, c) {};
+        FlatlanderMale(const std::string &n, int s, Colour c) : Flatlander(n, s, c) {};
     };
 
     // -----------------------------------------------------
@@ -85,7 +89,7 @@ namespace flatland
     // ----------------------------------------------------
     // Isocele: A male Flatlander
     // ----------------------------------------------------
-    class Isocele : public Father
+    class Isocele : public FlatlanderMale
     {
     public:
         friend class RobotSurgeon;
@@ -100,7 +104,7 @@ namespace flatland
     // --------------------------------------------------
     // Polygone: A male Flatlander
     // --------------------------------------------------
-    class Polygon : public Father
+    class Polygon : public FlatlanderMale
     {
     public:
         friend class RobotSurgeon;
@@ -136,13 +140,18 @@ namespace flatland
     class SingleChildFamily
     {
     public:
-        explicit SingleChildFamily(Father *f = nullptr, Segment *m = nullptr);
+        explicit SingleChildFamily(FlatlanderMale *f = nullptr, Segment *m = nullptr);
 
-        void setFather(Father *f);
+        std::string getName() const;
+        void setName(const std::string &n);
+        FlatlanderMale* getFather() const;
+        void setFather(FlatlanderMale *f);
+        Segment *getMother() const;
         void setMother(Segment *m);
+        Flatlander *getChild() const;
         bool setChild(Flatlander *c);
-        void divorce(const Father &initiator);
-        void divorce(const Segment &initiator);
+        // void divorce(const FlatlanderMale &initiator);
+        // void divorce(const Segment &initiator);
 
         // Creates a child and links it to the family, ownership is transferred to the caller.
         // The function warns the caller about ignoring the result.
@@ -151,9 +160,26 @@ namespace flatland
         void present() const;
 
     private:
-        Father *father;
+        std::string name{};
+        FlatlanderMale *father;
         Segment *mother;
         Flatlander *child;
     };
+
+    //---------------------------------------------------------------
+    // A function to present the details of a flatlandien with the label
+    // --------------------------------------------------------------
+    static void presentMember(const std::string& label, const Flatlander* f)
+    {
+        std::cout << label << ": ";
+        if (f != nullptr)
+        {
+            f->present();
+        }
+        else
+        {
+            std::cout << "none" << std::endl;
+        }
+    }
 
 } // namespace flatland

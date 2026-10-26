@@ -2,12 +2,14 @@
 
 #include <memory>
 #include <string>
-#include <optional>
 
 #include "util.hpp"
 
 namespace flatland
 {
+    // ----------------------------------------------------------
+    // Constants and global counters
+    // ----------------------------------------------------------
     constexpr int MIN_SIZE = 5;
     constexpr int MAX_SIZE = 100;
     constexpr int MIN_ANGLE = 20;
@@ -15,20 +17,28 @@ namespace flatland
     constexpr int MIN_NB_SIZE = 4;
     constexpr int MAX_NB_SIZE = 20;
 
-    inline  int numberOfSegments{0}; // use static here so that the variables last the whole lifecycle of the program.
+    // use static here so that the variables last the whole lifecycle of the program.
+    inline  int numberOfSegments{0};
     inline  int numberOfIsocele{0};
     inline  int numberOfPolygon{0};
 
     void printStatistics();
 
-    class Segment; // forward declaration
-    class Father; // forward declaration
+    // ----------------------------------------------------------
+    // Forward declarations
+    // ----------------------------------------------------------
+    class Segment;
+    class Father;
 
+    // ------------------------------------------------------------------
+    // Flatlander: Abstract base class for all organisms in the universe
+    // ------------------------------------------------------------------
     class Flatlander
     {
 
     public:
-        friend class RobotSurgeon;
+        friend class RobotSurgeon; // Gives RobotSurgeon access to private members
+
         Flatlander();
         Flatlander(const std::string &n, int s, Colour c);
         virtual ~Flatlander() = default;
@@ -44,28 +54,27 @@ namespace flatland
         static std::unique_ptr<Flatlander> newFlatlander(const Segment &mother, const Father &father);
 
     private:
-        std::string name;
-        int size;
-        Colour colour;
+        std::string name{};
+        int size{0};
+        Colour colour{};
     };
 
-    class Father : public virtual Flatlander {};
+    // ------------------------------------------------------
+    // Father: an abstract representation of an adult male Flatlander (Polygone or Isocele)
+    // TODO: consider changing to a generic male class that can be applied to children
+    // ------------------------------------------------------
+    class Father : public Flatlander
+    {
+    protected:
+        // using protected here so that only subclasses can access the data.
+        // It forwards the details to flatlander
+        Father(const std::string &n, int s, Colour c) : Flatlander(n, s, c) {};
+    };
 
-    class Child : public virtual Flatlander {};
-
-    /**
-     * A class to hold the son.
-     * The class sort of restrict gender transition
-     */
-    class Son : public Child {};
-
-    /**
-     * A class to hold the daughter
-     */
-    class Daughter : public Child {};
-
-
-    class Segment : public Daughter
+    // -----------------------------------------------------
+    // Segment: a female Flatlander
+    // -----------------------------------------------------
+    class Segment : public Flatlander
     {
     public:
         friend class RobotSurgeon;
@@ -73,7 +82,10 @@ namespace flatland
         void present() const override;
     };
 
-    class Isocele : public Father, public Son
+    // ----------------------------------------------------
+    // Isocele: A male Flatlander
+    // ----------------------------------------------------
+    class Isocele : public Father
     {
     public:
         friend class RobotSurgeon;
@@ -85,7 +97,10 @@ namespace flatland
         int peakAngle{};
     };
 
-    class Polygon : public Father, public  Son
+    // --------------------------------------------------
+    // Polygone: A male Flatlander
+    // --------------------------------------------------
+    class Polygon : public Father
     {
     public:
         friend class RobotSurgeon;
@@ -97,40 +112,48 @@ namespace flatland
         int nbSides{};
     };
 
+    // ----------------------------------------------------------
+    // RobotSurgeon: A class that can manipulate the flatlanders
+    // ----------------------------------------------------------
     class RobotSurgeon
     {
     public:
-        explicit RobotSurgeon(std::string n);
+        explicit RobotSurgeon( const std::string& n);
         std::string getName() const; // immutable name
-        void modifyColour(Flatlander &flatlander, Colour c);
-        void modifyPeakAngle(Isocele &i, int a);
-        void modifyNbSides(Polygon &p, int n);
+        static void modifyColour(Flatlander &flatlander, Colour c);
+        static void modifyPeakAngle(Isocele &i, int a);
+        static void modifyNbSides(Polygon &p, int n);
 
     private:
         const std::string name{};
     };
 
-    /**
-    * The family class is an aggregator and does not own any of the objects in it
-    *
-    * NB: Using segment for mother because no other class can be mother expect they are a segment.
-    */
+    // ----------------------------------------------------------------------------
+    // SingleChildFamily: aggegates a family, does not own any member of the family
+    // ----------------------------------------------------------------------------
+    // The family owns raw, non-owning pointers.
+    // The creator of the family members is responsible for their life cycle management.
     class SingleChildFamily
     {
     public:
-        explicit SingleChildFamily(Father *f = nullptr, Segment *m = nullptr, Child *c = nullptr); // creates an empty family
+        explicit SingleChildFamily(Father *f = nullptr, Segment *m = nullptr);
+
         void setFather(Father *f);
         void setMother(Segment *m);
-        bool setChild(Child *c);
+        bool setChild(Flatlander *c);
         void divorce(const Father &initiator);
         void divorce(const Segment &initiator);
+
+        // Creates a child and links it to the family, ownership is transferred to the caller.
+        // The function warns the caller about ignoring the result.
+        [[nodiscard]]std::unique_ptr<Flatlander> newChild();
 
         void present() const;
 
     private:
         Father *father;
         Segment *mother;
-        Child *child;
+        Flatlander *child;
     };
 
 } // namespace flatland

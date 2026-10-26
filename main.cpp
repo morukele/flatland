@@ -57,7 +57,6 @@ static void Q2()
     family.setFather(&iso);
     family.setMother(&seg);
     family.setChild(&poly);
-    family.setChild(&iso);
 
     family.present();
 
@@ -67,7 +66,7 @@ static void Q2()
 /**
  * A test function to create new flatlanders and see if the probability matches
  */
-static void Q3()
+static void Q3_1()
 {
     int segments{0};
     int isoceles{0};
@@ -101,7 +100,7 @@ static void Q3()
     std::cout << "Polygons: " << (static_cast<double>(polygons) / total) * 100 << "%" << std::endl;
 }
 
-static void Q4()
+static void Q3_2()
 {
     int segments{0};
     int isoceles{0};
@@ -135,6 +134,17 @@ static void Q4()
     std::cout << "Polygons: " << (static_cast<double>(polygons) / total) * 100 << "%" << std::endl;
 }
 
+static void Q4_1()
+{
+    Segment mother(std::string{"Mother"}, 10, Colour::RED);
+    Isocele father(std::string{"Father"}, 20, Colour::BLUE);
+
+    SingleChildFamily family(&father, &mother);
+    auto child = family.newChild(); // create new child
+
+    family.present();
+}
+
 int main()
 {
     Q1();
@@ -142,8 +152,10 @@ int main()
 
     printStatistics();
 
-    Q3();
-    Q4();
+    Q3_1();
+    Q3_2();
+
+    Q4_1();
 
     return 0;
 }

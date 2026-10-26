@@ -6,6 +6,10 @@ namespace flatland
     /**
      * Flatlander Implementation
      */
+    Flatlander::Flatlander() : name{}, size{0}, colour{}
+    {
+    }
+
     Flatlander::Flatlander(const std::string& n, const int s, const Colour c) : name{n}, size{s}, colour{c}
     {
     }
@@ -34,7 +38,7 @@ namespace flatland
     /**
      * Isocele Implementation
      */
-    Isocele::Isocele(const std::string& n, int s, Colour c) : Flatlander(n, s, c)
+    Isocele::Isocele(const std::string& n, int s, Colour c) : Father(n, s, c)
     {
         ++numberOfIsocele;
     }
@@ -50,7 +54,7 @@ namespace flatland
     /**
      * Polygon Implementation
      */
-    Polygon::Polygon(const std::string& n, int s, Colour c, int sides) : Flatlander(n, s, c), nbSides{sides}
+    Polygon::Polygon(const std::string& n, int s, Colour c, int sides) : Father(n, s, c), nbSides{sides}
     {
         ++numberOfPolygon;
     }
@@ -66,14 +70,14 @@ namespace flatland
     /**
      * Robot Surgeon Implementation
      */
-    RobotSurgeon::RobotSurgeon(std::string n) : name{n}
+    RobotSurgeon::RobotSurgeon(const std::string& n) : name{n}
     {
     }
 
     std::string RobotSurgeon::getName() const { return name; }
-    void RobotSurgeon::modifyColour(Flatlander& flatlander, Colour c) { flatlander.colour = c; }
-    void RobotSurgeon::modifyPeakAngle(Isocele& i, int a) { i.peakAngle = clamp(a, MAX_ANGLE, MIN_ANGLE); }
-    void RobotSurgeon::modifyNbSides(Polygon& p, int n) { p.nbSides = clamp(n, MAX_NB_SIZE, MIN_NB_SIZE); }
+    void RobotSurgeon::modifyColour(Flatlander& flatlander, const Colour c) { flatlander.colour = c; }
+    void RobotSurgeon::modifyPeakAngle(Isocele& i, const int a) { i.peakAngle = clamp(a, MAX_ANGLE, MIN_ANGLE); }
+    void RobotSurgeon::modifyNbSides(Polygon& p, const int n) { p.nbSides = clamp(n, MAX_NB_SIZE, MIN_NB_SIZE); }
 
     void printStatistics()
     {
@@ -85,7 +89,7 @@ namespace flatland
     /**
      * Family Implementation
      */
-    SingleChildFamily::SingleChildFamily(Father* f, Segment* m, Child* c) : father{f}, mother{m}, child{c}
+    SingleChildFamily::SingleChildFamily(Father* f, Segment* m) : father{f}, mother{m}, child(nullptr)
     {
     }
 
@@ -114,7 +118,7 @@ namespace flatland
         }
     }
 
-    bool SingleChildFamily::setChild(Child* c)
+    bool SingleChildFamily::setChild(Flatlander* c)
     {
         // TODO: check if null input passed in
         if (child != nullptr)
@@ -126,6 +130,30 @@ namespace flatland
         return true; // setting child was successful
     }
 
+    /**
+     * A function to create a child,
+     * it sets the child in the family and then returns the child object.
+     * @return A unique pointer to the new child object
+     */
+    std::unique_ptr<Flatlander> SingleChildFamily::newChild()
+    {
+        // less than two parents
+        if (father == nullptr || mother == nullptr)
+        {
+            throw std::logic_error("Single parent cannot produce child");
+        }
+        // if child exists
+        if (child != nullptr)
+        {
+            throw std::logic_error("Cannot have more than one child");
+        }
+
+        auto res = Flatlander::newFlatlander(*mother, *father);
+        setChild(res.get());
+
+        return res;
+    }
+
     void SingleChildFamily::present() const
     {
         std::cout << std::endl;
@@ -135,9 +163,15 @@ namespace flatland
         std::cout << "Child name -> " << child->getName() << std::endl;
     }
 
+    /**
+     * Creates a new flatlander from two parents while respecting the generation rules
+     * @param mother: Always a segment
+     * @param father: Could be an isosceles or a polygone but never a segment
+     * @return A unique pointer to a new flatlander.
+     */
     std::unique_ptr<Flatlander> Flatlander::newFlatlander(const Segment& mother, const Father& father)
     {
-        const std::string name = mother.getName() = "-" + father.getName(); // compound name from parents
+        const std::string name = mother.getName() + "-" + father.getName(); // compound name from parents
         int size = clamp((mother.getSize() + father.getSize()) / 2, MIN_SIZE, MAX_SIZE);
         Colour colour = randInt(0, 1) == 0 ? mother.getColour() : father.getColour();
 

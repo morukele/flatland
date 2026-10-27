@@ -1,8 +1,50 @@
 #include "flatlandien.hpp"
 #include <iostream>
+#include <stdexcept>
 
 namespace flatland
 {
+    namespace
+    {
+        // An anonymous namespace for function that are private to the flatlander class
+        /**
+         *  A function to check if a Flatlander is registered on not into a registry.
+         * @param registry a register of Flatlanders
+         * @param f a Flatlander to check for in the registry
+         * @return a bool if the Flatlander is in the registry or not
+         */
+        bool isRegistered(const std::vector<const Flatlander*>& registry, const Flatlander* f)
+        {
+            for (const auto element : registry)
+            {
+                if (element == f)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * A function to unregister a Flatlander from the registry.
+         * @param registry a register of Flatlanders
+         * @param f a Flatlander to check for in the registry
+         * @return a bool if the Flatlander has been unregistered or not
+         */
+        bool unregister(std::vector<const Flatlander*>& registry, const Flatlander* f)
+        {
+            for (std::size_t i{0}; i < registry.size(); ++i)
+            {
+                if (registry[i] == f)
+                {
+                    registry.erase(registry.begin() + i);
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
     /**
      * Flatlander Implementation
      */
@@ -104,10 +146,56 @@ namespace flatland
     }
 
     /**
+     * Static vectors to hold the information about who is a parent and who is a child
+     */
+    std::vector<const Flatlander*> Family::registeredParents;
+    std::vector<const Flatlander*> Family::registeredChildren;
+
+    /**
+     * The public way to create a Family now
+     */
+    Family Family::newFamily(FlatlanderMale* f, Segment* m)
+    {
+        if (f != nullptr && isRegistered(registeredParents, f))
+        {
+            throw std::logic_error("Polygamy is not allowed: father already in a family");
+        }
+        if (m != nullptr && isRegistered(registeredChildren, m))
+        {
+            throw std::logic_error("Polygamy is not allowed: mother already in a family");
+        }
+
+        // Reserve for the two parents
+        registeredParents.reserve(registeredParents.size() + 2);
+
+        if (f != nullptr)
+        {
+            registeredParents.push_back(f);
+        }
+        if (m != nullptr)
+        {
+            registeredParents.push_back(m);
+        }
+
+        return Family(f, m);
+    }
+
+    /**
      * Family Implementation
      */
     Family::Family(FlatlanderMale* f, Segment* m) : father{f}, mother{m}
     {
+    }
+
+    Family::~Family()
+    {
+        unregister(registeredParents, father);
+        unregister(registeredParents, mother);
+
+        for (const auto child : children)
+        {
+            unregister(registeredChildren, child);
+        }
     }
 
     std::string Family::getName() const
@@ -151,7 +239,7 @@ namespace flatland
         }
         else
         {
-            std::cout << "Mother is already se or null input passed int" << std::endl;
+            std::cout << "Mother is already set or null input passed int" << std::endl;
         }
     }
 
@@ -182,16 +270,19 @@ namespace flatland
             return false;
         }
 
-        for (const auto& child : children)
+        // Checks if child is already in the family or member of another family
+        if (isRegistered(registeredChildren, c))
         {
-            if (child == c)
-            {
-                std::cout << "Child already adopted to this family" << std::endl;
-                return false;
-            }
+            std::cout << "Family::adoptChild() called with registered child" << std::endl;
+            return false;
         }
 
+        // Reserve first : if one of these allocations throws, neither vector has changed
+        children.reserve(children.size() + 1);
+        registeredChildren.reserve(registeredChildren.size() + 1);
+
         children.push_back(c);
+        registeredChildren.push_back(c);
         return true;
     }
 
@@ -213,9 +304,14 @@ namespace flatland
         {
             throw std::logic_error("A dead Flatlander cannot reproduce");
         }
-        children.reserve(children.size() + 1); // Reserving capacity for one more child object
+
+        // Reserving capacity for one more child object
+        children.reserve(children.size() + 1);
+        registeredChildren.reserve(registeredChildren.size() + 1);
+
         auto res = Flatlander::newFlatlander(*mother, *father);
         children.push_back(res);
+        registeredChildren.push_back(res);
 
         return res;
     }

@@ -53,9 +53,7 @@ static void Q2()
     seg.present();
 
     // Setting up the family
-    Family family;
-    family.setFather(&iso);
-    family.setMother(&seg);
+    Family family = Family::newFamily(&iso, &seg);
     family.adoptChild(&poly);
 
     family.present();
@@ -157,7 +155,7 @@ static void Q4_1()
     std::cout << "----------------Running Test 4_1------------" << std::endl;
     auto [mother, father] = generateFatherAndMother("Mother", "Father");
 
-    Family family(father, mother);
+    Family family = Family::newFamily(father, mother);
     auto child = family.newChild(); // create new child
 
     family.present();
@@ -168,7 +166,7 @@ static void Q5()
 {
     std::cout << "----------------Running Test 5------------" << std::endl;
     auto [mother, father] = generateFatherAndMother("Alice", "Bob");
-    Family family(father, mother);
+    Family family = Family::newFamily(father, mother);
 
     father->present();
     mother->present();
@@ -179,9 +177,10 @@ static void Q5()
     // Dead father cannot reproduce
     std::cout << std::endl;
     std::cout << "--- Killing father ---" << std::endl;
-    Family family2(father, mother);
-    father->kill();
-    father->present();
+    auto [mother2, father2] = generateFatherAndMother("Alice", "Bob");
+    Family family2 = Family::newFamily(father2, mother2);
+    father2->kill();
+    father2->present();
     try
     {
         auto kid2 = family2.newChild();
@@ -195,10 +194,10 @@ static void Q5()
     // Dead mother cannot reproduce
     std::cout << std::endl;
     std::cout << "--- Killing mother ---" << std::endl;
-    Isocele father2("Carl", 25, Colour::BLUE);
-    Family family3(&father2, mother);
-    mother->kill();
-    mother->present();
+    auto [mother3, father3] = generateFatherAndMother("Alice", "Bob");
+    Family family3 = Family::newFamily(father3, mother3);
+    mother3->kill();
+    mother3->present();
 
     try
     {
@@ -219,7 +218,7 @@ static void Q6()
     // Owners of the children.
     std::vector<Flatlander*> owners;
 
-    Family family(father, mother);
+    Family family = Family::newFamily(father, mother);
     family.setName("Orukele");
 
     std::cout << "--- Empty Family ---" << std::endl;
@@ -260,6 +259,21 @@ static void Q6()
     family.present();
 }
 
+static void Q7()
+{
+    std::cout << "------------------Running Test 7-------------" << std::endl;
+    auto [alice, bob] = generateFatherAndMother("Alice", "Bob");
+    Polygon orphan("Orphan", 18, randomColour(), 6);
+
+    {
+        Family f1 = Family::newFamily(bob, alice);
+        std::cout << f1.adoptChild(&orphan) << std::endl;
+    }
+
+    Family f2 = Family::newFamily(bob, alice);
+    std::cout << f2.adoptChild(&orphan) << std::endl;
+}
+
 int main()
 {
     Q1();
@@ -275,6 +289,8 @@ int main()
     Q5();
 
     Q6();
+
+    Q7();
 
     return 0;
 }

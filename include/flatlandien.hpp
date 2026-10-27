@@ -143,7 +143,12 @@ namespace flatland
     class Family
     {
     public:
-        explicit Family(FlatlanderMale *f = nullptr, Segment *m = nullptr);
+        // Checks that the family complies with Flatlandian society rules
+        static Family newFamily(FlatlanderMale *f = nullptr, Segment *m = nullptr);
+
+        ~Family(); // unregisters parents and children from static list
+        Family(const Family &) = delete; // prevent copies because it will put members in two different families
+        Family& operator=(const Family &) = delete; // prevent assignment constructor for copy
 
         size_t getChildCount() const;
         std::string getName() const;
@@ -163,6 +168,17 @@ namespace flatland
         void present() const;
 
     private:
+        // Private: to ensure that creation of family matches the Flatlandian society rules
+        explicit Family(FlatlanderMale *f = nullptr, Segment *m = nullptr);
+
+        // Shared by all families.
+        // It is static so it lives for the entire lifetime of the program.
+        // It is non owning, so it contains pointers to exisiting flatlanders.
+        // The purpose is to check flatlanders that are already parents or children to someone.
+        // This prevents any form of polygamy, or children with more than 2 parents
+        static std::vector<const Flatlander*> registeredParents; // fathers and mothers in a family
+        static std::vector<const Flatlander*> registeredChildren; // children in a family
+
         std::string name{};
         FlatlanderMale *father;
         Segment *mother;

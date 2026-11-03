@@ -274,23 +274,67 @@ static void Q7()
     std::cout << f2.adoptChild(&orphan) << std::endl;
 }
 
+
+//------------------------------------------------------
+// Predicate functions
+//------------------------------------------------------
+
+// Size between v1 and v2
+bool hasSizeBetween(const Flatlander& f, int v1, int v2)
+{
+    return f.getSize() >= v1 && f.getSize() <= v2;
+}
+
+// Is an isocele triangle
+bool isIsoceleTriangle(const Flatlander& f, int v1, int /*unused*/)
+{
+    const auto* i = dynamic_cast<const Isocele*>(&f);
+    return i != nullptr && i->getPeakAngle() > v1;
+}
+
+// If the flatlander is alive or not
+bool isDead(const Flatlander& f, int /*unused*/, int /*unused*/)
+{
+    return !f.isAlive();
+}
+
+auto hasSizeBetweenLambda = [](const Flatlander& f, int v1, int v2) { return f.getSize() >= v1 && f.getSize() <= v2; };
+auto isIsoceleTriangleLambda = [](const Flatlander& f, int v1, int /*unused*/)
+{
+    const auto* i = dynamic_cast<const Isocele*>(&f);
+    return i != nullptr && i->getPeakAngle() > v1;
+};
+auto isDeadLambda = [](const Flatlander& f, int /*unused*/, int /*unused*/) { return !f.isAlive(); };
+
+static void Q8()
+{
+    Segment alice("Alice", 20, Colour::RED);
+    Isocele bob("Bob", 30, Colour::BLUE);
+    Family family = Family::newFamily(&bob, &alice);
+
+    Polygon orphan("Orphan", 18, randomColour(), 6);
+    family.adoptChild(&orphan);
+
+    Flatlander* child = family.newChild();
+
+    bob.kill();
+
+    auto printAll = [](const std::string& title, const std::vector<Flatlander*>& v)
+    {
+        std::cout << title << " (" << v.size() << "):" << std::endl;
+        for (int i{}; i < v.size(); ++i)
+        {
+            std::cout << "  ";
+            v[i]->present();
+        }
+    };
+
+    printAll("Size is between 10 and 25", family.findAll(hasSizeBetweenLambda, 10, 25));
+    printAll("Isoceles with angle > 55°", family.findAll(isIsoceleTriangleLambda, 55));
+    printAll("Dead", family.findAll(isDeadLambda));
+}
+
 int main()
 {
-    Q1();
-    Q2();
-
-    printStatistics();
-
-    Q3_1();
-    Q3_2();
-
-    Q4_1();
-
-    Q5();
-
-    Q6();
-
-    Q7();
-
-    return 0;
+    Q8();
 }

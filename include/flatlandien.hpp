@@ -134,6 +134,11 @@ namespace flatland
         const std::string name{};
     };
 
+    //-------------------------------------------------------------
+    // A generic predicate function for the find function
+    //-------------------------------------------------------------
+    using Predicate = bool(const Flatlander&, int, int);
+
     // ----------------------------------------------------------------------------
     // Family: aggregates a family, does not own any member of the family
     // ----------------------------------------------------------------------------
@@ -166,6 +171,14 @@ namespace flatland
         [[nodiscard]]Flatlander* newChild();
 
         void present() const;
+
+        //-------------------------------------------------------------
+        // A function that finds all flatlanders in a family that meets
+        // a given predicate function.
+        // NB: making it a member function so that it can access private
+        // members in the family class.
+        //-------------------------------------------------------------
+        std::vector<Flatlander*> findAll(Predicate* pred, int v1=0, int v2=0) const;
 
     private:
         // Private: to ensure that creation of family matches the Flatlandian society rules

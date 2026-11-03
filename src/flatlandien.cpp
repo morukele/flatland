@@ -367,4 +367,41 @@ namespace flatland
         // Father is Polygon -> child is a polygon
         return new Polygon(name, size, colour, randInt(MIN_NB_SIZE, MAX_NB_SIZE));
     }
+
+    /**
+     * A function that finds all flatlanders in a family that meets a given predicate function.
+     * @param predicate The predicate to compare the flatlander against
+     * @param v1 The first variable in the predicate
+     * @param v2 The second variable in the predicate
+     * @return A vector of results that match the predicate or an empty vector if nothing matches
+     */
+    std::vector<Flatlander*> Family::findAll(Predicate* predicate, int v1, int v2) const
+    {
+        std::vector<Flatlander*> res;
+
+        if (predicate == nullptr)
+        {
+            return res; // predicate is empty, so nothing matches
+        }
+
+        // Since we support single parent family, father or mother could be null
+        if (father != nullptr && predicate(*father, v1, v2))
+        {
+            res.push_back(father);
+        }
+        if (mother != nullptr && predicate(*mother, v1, v2))
+        {
+            res.push_back(mother);
+        }
+
+        for (const auto& c : children)
+        {
+            if (c != nullptr && predicate(*c, v1, v2))
+            {
+                res.push_back(c);
+            }
+        }
+
+        return res;
+    }
 } // namespace flatland

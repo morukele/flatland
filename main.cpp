@@ -1,6 +1,7 @@
 #include "flatlandien.hpp"
 #include <string>
 #include <iostream>
+#include <sstream>
 
 using namespace flatland;
 
@@ -334,7 +335,53 @@ static void Q8()
     printAll("Dead", family.findAll(isDeadLambda));
 }
 
+static void Q9()
+{
+    Segment alice("Alice", 20, Colour::RED);
+    Isocele bob("Bob", 30, Colour::BLUE);
+    Polygon square("Square", 15, Colour::GREEN, 4);
+
+    RobotSurgeon::modifyPeakAngle(bob, 40);
+
+    std::cout << "--- Direct printing, on per type ---" << std::endl;
+    std::cout << alice << std::endl;
+    std::cout << bob << std::endl;
+    std::cout << square << std::endl;
+
+    std::cout << "--- Through a base reference (polymorphism) ---" << std::endl;
+    const Flatlander& ref = bob;
+    std::cout << ref << std::endl;
+
+    std::cout << "--- Through base pointers ---" << std::endl;
+    std::vector<const Flatlander*> all{&alice, &bob, &square};
+    for (auto f : all)
+    {
+        std::cout << *f << std::endl;
+    }
+
+    std::cout << "--- Chaining and state change ---" << std::endl;
+    bob.kill();
+    std::cout << "After death: " << bob << " | and " << alice << std::endl;
+
+    std::cout << "--- Family ---" << std::endl;
+    Family family = Family::newFamily(&square, &alice);
+    Flatlander* kid = family.newChild();
+    std::cout << "Newborn: " << *kid << '\n';
+
+    std::cout << "--- Automatic check with ostringstream ---\n";
+    std::ostringstream oss;
+    oss << bob;
+    const std::string text = oss.str();
+    std::cout << "captured: " << text << "\n";
+    std::cout << std::boolalpha
+        << "contains \"Isocele\": " << (text.find("Isocele") != std::string::npos) << "\n"
+        << "contains \"dead\": " << (text.find("dead") != std::string::npos) << "\n";
+
+    std::cout << "--- present() still works ---\n";
+    alice.present();
+}
+
 int main()
 {
-    Q8();
+    Q9();
 }

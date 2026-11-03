@@ -54,7 +54,11 @@ namespace flatland
         void kill();
         bool isAlive() const;
 
-        virtual void present() const = 0;       // Abstract present in Flatlander
+        // Prints the Flatlander to any stream.
+        // Prints the common members of Flatlanders
+        virtual void print(std::ostream& os) const = 0;
+
+        void present() const;       // Abstract present in Flatlander
 
         static Flatlander* newFlatlander(const Segment &mother, const FlatlanderMale &father);
 
@@ -64,6 +68,12 @@ namespace flatland
         Colour colour{};
         bool alive{true}; // A newly constructed flatlander will always be alive
     };
+
+    //--------------------------------------------------------
+    //Operator overload for displaying the information of
+    //the Flatlander object.
+    //--------------------------------------------------------
+    std::ostream& operator<<(std::ostream& os, const Flatlander& f);
 
     // ------------------------------------------------------
     // Father: an abstract representation of an adult male Flatlander (Polygone or Isocele)
@@ -85,7 +95,10 @@ namespace flatland
     public:
         friend class RobotSurgeon;
         Segment(const std::string &n, int s, Colour c);
-        void present() const override;
+        void print(std::ostream& os) const override;
+
+        // Operator overloads
+        bool operator< (const Segment& rhs) const;
     };
 
     // ----------------------------------------------------
@@ -97,7 +110,7 @@ namespace flatland
         friend class RobotSurgeon;
         Isocele(const std::string &n, int s, Colour c);
         int getPeakAngle() const;
-        void present() const override;
+        void print(std::ostream& os) const override;
 
     private:
         int peakAngle{};
@@ -112,7 +125,7 @@ namespace flatland
         friend class RobotSurgeon;
         Polygon(const std::string &n, int s, Colour c, int sides);
         int getNbSides() const;
-        void present() const override;
+        void print(std::ostream& os) const override;
 
     private:
         int nbSides{};

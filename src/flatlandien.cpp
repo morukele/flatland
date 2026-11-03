@@ -65,13 +65,21 @@ namespace flatland
     void Flatlander::kill() { alive = false; }
     bool Flatlander::isAlive() const { return alive; }
 
-    void Flatlander::present() const
+    std::ostream& operator<<(std::ostream& os, const Flatlander& f)
     {
-        std::cout << getName() << " (size " << getSize() << ", "
+        f.print(os);
+        return os;
+    }
+
+    void Flatlander::print(std::ostream& os) const
+    {
+        os << getName() << " (size " << getSize() << ", "
             << (isAlive() ? "alive" : "dead")
             << ", " << convertColourEnumToText(getColour())
             << ")";
     }
+
+    void Flatlander::present() const { std::cout << *this << std::endl; }
 
     /**
      * Segment Implementation
@@ -82,11 +90,15 @@ namespace flatland
         ++numberOfSegments;
     }
 
-    void Segment::present() const
+    void Segment::print(std::ostream& os) const
     {
-        std::cout << "[Segment] -> ";
-        Flatlander::present();
-        std::cout << std::endl;
+        os << "[Segment] -> ";
+        Flatlander::print(os);
+    }
+
+    bool Segment::operator<(const Segment& rhs) const
+    {
+        return false; // All segments are equal for now
     }
 
     /**
@@ -100,11 +112,10 @@ namespace flatland
 
     int Isocele::getPeakAngle() const { return peakAngle; }
 
-    void Isocele::present() const
+    void Isocele::print(std::ostream& os) const
     {
-        std::cout << "[Isocele, peak angle " << getPeakAngle() << "] -> ";
-        Flatlander::present();
-        std::cout << std::endl;
+        os << "[Isocele, peak angle " << getPeakAngle() << "] -> ";
+        Flatlander::print(os);
     }
 
     /**
@@ -119,11 +130,10 @@ namespace flatland
 
     int Polygon::getNbSides() const { return nbSides; }
 
-    void Polygon::present() const
+    void Polygon::print(std::ostream& os) const
     {
-        std::cout << "[Polygon, " << getNbSides() << " sides] -> ";
-        Flatlander::present();
-        std::cout << std::endl;
+        os << "[Polygon, " << getNbSides() << " sides] -> ";
+        Flatlander::print(os);
     }
 
     /**

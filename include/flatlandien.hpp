@@ -62,6 +62,14 @@ namespace flatland
 
         static Flatlander* newFlatlander(const Segment &mother, const FlatlanderMale &father);
 
+        // Operator overload for Flatlanders
+        virtual bool operator<(const Flatlander& rhs) const = 0;
+        // virtual bool operator>(const Flatlander& rhs) const = 0;
+        // virtual bool operator<= (const Flatlander& rhs) const = 0;
+        // virtual bool operator>= (const Flatlander& rhs) const = 0;
+        // virtual bool operator==(const Flatlander& rhs) const = 0;
+        // virtual bool operator!=(const Flatlander& rhs) const = 0;
+
     private:
         std::string name{};
         int size{0};
@@ -97,8 +105,12 @@ namespace flatland
         Segment(const std::string &n, int s, Colour c);
         void print(std::ostream& os) const override;
 
-        // Operator overloads
-        bool operator< (const Segment& rhs) const;
+        bool operator< (const Flatlander& rhs) const override;
+        // bool operator> (const Flatlander& rhs) const override;
+        // bool operator<= (const Flatlander& rhs) const override;
+        // bool operator>= (const Flatlander& rhs) const override;
+        // bool operator==(const Flatlander& rhs) const override;
+        // bool operator!=(const Flatlander& rhs) const override;
     };
 
     // ----------------------------------------------------
@@ -111,6 +123,13 @@ namespace flatland
         Isocele(const std::string &n, int s, Colour c);
         int getPeakAngle() const;
         void print(std::ostream& os) const override;
+
+        bool operator< (const Flatlander& rhs) const override;
+        // bool operator> (const Flatlander& rhs) const override;
+        // bool operator<= (const Flatlander& rhs) const override;
+        // bool operator>= (const Flatlander& rhs) const override;
+        // bool operator==(const Flatlander& rhs) const override;
+        // bool operator!=(const Flatlander& rhs) const override;
 
     private:
         int peakAngle{};
@@ -126,6 +145,13 @@ namespace flatland
         Polygon(const std::string &n, int s, Colour c, int sides);
         int getNbSides() const;
         void print(std::ostream& os) const override;
+
+        bool operator< (const Flatlander& rhs) const override;
+        // bool operator> (const Flatlander& rhs) const override;
+        // bool operator<= (const Flatlander& rhs) const override;
+        // bool operator>= (const Flatlander& rhs) const override;
+        // bool operator==(const Flatlander& rhs) const override;
+        // bool operator!=(const Flatlander& rhs) const override;
 
     private:
         int nbSides{};

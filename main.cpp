@@ -381,7 +381,34 @@ static void Q9()
     alice.present();
 }
 
+static void Q10()
+{
+    Segment alice("Alice", 20, Colour::RED);
+    Segment rebecca("rebecca", 30, Colour::BLUE);
+    Isocele bob("Bob", 30, Colour::BLUE);
+    Polygon square("Square", 15, Colour::GREEN, 4);
+
+    std::cout << "Comparing Segment to other types" << std::endl;
+    std::cout << std::boolalpha << "Alice is less than Rebecca: " << (alice < rebecca) << std::endl;
+    try
+    {
+        auto res = alice < bob;
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Expected error [Segment and Isocele]: " << e.what() << std::endl;
+    }
+    try
+    {
+        auto res = alice < square;
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Expected error [Segment and Polygon]: " << e.what() << std::endl;
+    }
+}
+
 int main()
 {
-    Q9();
+    Q10();
 }

@@ -96,8 +96,16 @@ namespace flatland
         Flatlander::print(os);
     }
 
-    bool Segment::operator<(const Segment& rhs) const
+    bool Segment::operator<(const Flatlander& rhs) const
     {
+        // Convert to Segment class.
+        // If it does not work, return false
+        const auto s = dynamic_cast<const Segment*>(&rhs);
+        if (!s)
+        {
+            throw std::invalid_argument("Cannot compare a Segment with another type");
+        }
+
         return false; // All segments are equal for now
     }
 
@@ -118,6 +126,27 @@ namespace flatland
         Flatlander::print(os);
     }
 
+    bool Isocele::operator<(const Flatlander& rhs) const
+    {
+        // Run Isocele comparison
+        const auto i = dynamic_cast<const Isocele*>(&rhs);
+        if (i)
+        {
+            return this->getPeakAngle() < i->getPeakAngle();
+        }
+
+        // Run Isocele and Polygon comparison
+        const auto p = dynamic_cast<const Polygon*>(&rhs);
+        if (p)
+        {
+            // An Isocele is always inferior to a Polygon
+            return true;
+        }
+
+        // else return error for all other cases
+        throw std::invalid_argument("Can only compare an Isocele to itself or a Polygone");
+    }
+
     /**
      * Polygon Implementation
      */
@@ -134,6 +163,11 @@ namespace flatland
     {
         os << "[Polygon, " << getNbSides() << " sides] -> ";
         Flatlander::print(os);
+    }
+
+    bool Polygon::operator<(const Flatlander& rhs) const
+    {
+        return false;
     }
 
     /**

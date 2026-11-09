@@ -100,13 +100,57 @@ namespace flatland
     {
         // Convert to Segment class.
         // If it does not work, return false
-        const auto s = dynamic_cast<const Segment*>(&rhs);
-        if (!s)
+        if (const auto s = dynamic_cast<const Segment*>(&rhs); !s)
         {
             throw std::invalid_argument("Cannot compare a Segment with another type");
         }
 
         return false; // All segments are equal for now
+    }
+
+    bool Segment::operator>(const Flatlander& rhs) const
+    {
+        if (const auto s = dynamic_cast<const Segment*>(&rhs); !s)
+        {
+            throw std::invalid_argument("Cannot compare a Segment with another type");
+        }
+        return false;
+    }
+
+    bool Segment::operator<=(const Flatlander& rhs) const
+    {
+        if (const auto s = dynamic_cast<const Segment*>(&rhs); !s)
+        {
+            throw std::invalid_argument("Cannot compare a Segment with another type");
+        }
+        return true; // All segments are equal, so <= is always true
+    }
+
+    bool Segment::operator>=(const Flatlander& rhs) const
+    {
+        if (const auto s = dynamic_cast<const Segment*>(&rhs); !s)
+        {
+            throw std::invalid_argument("Cannot compare a Segment with another type");
+        }
+        return true; // All segments are equal, so >= is always true
+    }
+
+    bool Segment::operator==(const Flatlander& rhs) const
+    {
+        if (const auto s = dynamic_cast<const Segment*>(&rhs); !s)
+        {
+            throw std::invalid_argument("Cannot compare a Segment with another type");
+        }
+        return true; // All segments are equal
+    }
+
+    bool Segment::operator!=(const Flatlander& rhs) const
+    {
+        if (const auto s = dynamic_cast<const Segment*>(&rhs); !s)
+        {
+            throw std::invalid_argument("Cannot compare a Segment with another type");
+        }
+        return false; // All segments are equal
     }
 
     /**
@@ -129,15 +173,13 @@ namespace flatland
     bool Isocele::operator<(const Flatlander& rhs) const
     {
         // Run Isocele comparison
-        const auto i = dynamic_cast<const Isocele*>(&rhs);
-        if (i)
+        if (const auto i = dynamic_cast<const Isocele*>(&rhs))
         {
-            return this->getPeakAngle() < i->getPeakAngle();
+            return getPeakAngle() < i->getPeakAngle();
         }
 
         // Run Isocele and Polygon comparison
-        const auto p = dynamic_cast<const Polygon*>(&rhs);
-        if (p)
+        if (dynamic_cast<const Polygon*>(&rhs))
         {
             // An Isocele is always inferior to a Polygon
             return true;
@@ -145,6 +187,86 @@ namespace flatland
 
         // else return error for all other cases
         throw std::invalid_argument("Can only compare an Isocele to itself or a Polygone");
+    }
+
+    bool Isocele::operator>(const Flatlander& rhs) const
+    {
+        if (const auto i = dynamic_cast<const Isocele*>(&rhs))
+        {
+            return getPeakAngle() > i->getPeakAngle();
+        }
+
+        if (dynamic_cast<const Polygon*>(&rhs))
+        {
+            // An Isocele is always inferior to a Polygon
+            return false;
+        }
+
+        throw std::invalid_argument("Can only compare an Isocele to itself or a Polygon");
+    }
+
+    bool Isocele::operator<=(const Flatlander& rhs) const
+    {
+        if (const auto i = dynamic_cast<const Isocele*>(&rhs))
+        {
+            return getPeakAngle() <= i->getPeakAngle();
+        }
+
+        if (dynamic_cast<const Polygon*>(&rhs))
+        {
+            // An Isocele is always inferior to a Polygon
+            return true;
+        }
+
+        throw std::invalid_argument("Can only compare an Isocele to itself or a Polygon");
+    }
+
+    bool Isocele::operator>=(const Flatlander& rhs) const
+    {
+        if (const auto i = dynamic_cast<const Isocele*>(&rhs))
+        {
+            return getPeakAngle() >= i->getPeakAngle();
+        }
+
+        if (dynamic_cast<const Polygon*>(&rhs))
+        {
+            // An Isocele is always inferior to a Polygon
+            return false;
+        }
+
+        throw std::invalid_argument("Can only compare an Isocele to itself or a Polygon");
+    }
+
+    bool Isocele::operator==(const Flatlander& rhs) const
+    {
+        if (const auto i = dynamic_cast<const Isocele*>(&rhs))
+        {
+            return getPeakAngle() == i->getPeakAngle();
+        }
+
+        if (dynamic_cast<const Polygon*>(&rhs))
+        {
+            // An Isocele is never equal to a Polygon
+            return false;
+        }
+
+        throw std::invalid_argument("Can only compare an Isocele to itself or a Polygon");
+    }
+
+    bool Isocele::operator!=(const Flatlander& rhs) const
+    {
+        if (const auto i = dynamic_cast<const Isocele*>(&rhs))
+        {
+            return getPeakAngle() != i->getPeakAngle();
+        }
+
+        if (dynamic_cast<const Polygon*>(&rhs))
+        {
+            // An Isocele is never equal to a Polygon
+            return true;
+        }
+
+        throw std::invalid_argument("Can only compare an Isocele to itself or a Polygon");
     }
 
     /**
@@ -167,7 +289,92 @@ namespace flatland
 
     bool Polygon::operator<(const Flatlander& rhs) const
     {
-        return false;
+        if (dynamic_cast<const Isocele*>(&rhs))
+        {
+            // A polygon is always superior to an Isocele
+            return false;
+        }
+        if (const auto p = dynamic_cast<const Polygon*>(&rhs))
+        {
+            return getNbSides() < p->getNbSides();
+        }
+
+        throw std::invalid_argument("Can only compare a Polygon to itself or an Isocele");
+    }
+
+    bool Polygon::operator>(const Flatlander& rhs) const
+    {
+        if (dynamic_cast<const Isocele*>(&rhs))
+        {
+            // A polygon is always superior to an Isocele
+            return true;
+        }
+        if (const auto p = dynamic_cast<const Polygon*>(&rhs))
+        {
+            return getNbSides() > p->getNbSides();
+        }
+
+        throw std::invalid_argument("Can only compare a Polygon to itself or an Isocele");
+    }
+
+    bool Polygon::operator<=(const Flatlander& rhs) const
+    {
+        if (dynamic_cast<const Isocele*>(&rhs))
+        {
+            // A polygon is always superior to an Isocele
+            return false;
+        }
+        if (const auto p = dynamic_cast<const Polygon*>(&rhs))
+        {
+            return getNbSides() <= p->getNbSides();
+        }
+
+        throw std::invalid_argument("Can only compare a Polygon to itself or an Isocele");
+    }
+
+    bool Polygon::operator>=(const Flatlander& rhs) const
+    {
+        if (dynamic_cast<const Isocele*>(&rhs))
+        {
+            // A polygon is always superior to an Isocele
+            return true;
+        }
+        if (const auto p = dynamic_cast<const Polygon*>(&rhs))
+        {
+            return getNbSides() >= p->getNbSides();
+        }
+
+        throw std::invalid_argument("Can only compare a Polygon to itself or an Isocele");
+    }
+
+    bool Polygon::operator==(const Flatlander& rhs) const
+    {
+        if (dynamic_cast<const Isocele*>(&rhs))
+        {
+            // A polygon is never equal to an Isocele
+            return false;
+        }
+        if (const auto p = dynamic_cast<const Polygon*>(&rhs))
+        {
+            return getNbSides() == p->getNbSides();
+        }
+
+        throw std::invalid_argument("Can only compare a Polygon to itself or an Isocele");
+    }
+
+    bool Polygon::operator!=(const Flatlander& rhs) const
+    {
+        if (dynamic_cast<const Isocele*>(&rhs))
+        {
+            // A polygon is never equal to an Isocele
+            return true;
+        }
+        if (const auto p = dynamic_cast<const Polygon*>(&rhs))
+        {
+            return getNbSides() != p->getNbSides();
+        }
+
+        throw std::invalid_argument("Can only compare a Polygon to itself or an Isocele");
     }
 
     /**

@@ -406,9 +406,156 @@ static void Q10()
     {
         std::cerr << "Expected error [Segment and Polygon]: " << e.what() << std::endl;
     }
+
+    std::cout << "Comparing Isocele to other types" << std::endl;
+    std::cout << std::boolalpha << "Bob is less than Square: " << (bob < square) << std::endl;
+}
+
+static void Q11()
+{
+    std::cout << std::boolalpha;
+
+    // --- Segment comparisons ---
+    Segment s1("S1", 10, Colour::RED);
+    Segment s2("S2", 20, Colour::BLUE);
+
+    std::cout << "=== Segment vs Segment ===" << std::endl;
+    std::cout << "s1 < s2:  " << (s1 < s2) << " (expected: false)" << std::endl;
+    std::cout << "s1 > s2:  " << (s1 > s2) << " (expected: false)" << std::endl;
+    std::cout << "s1 <= s2: " << (s1 <= s2) << " (expected: true)" << std::endl;
+    std::cout << "s1 >= s2: " << (s1 >= s2) << " (expected: true)" << std::endl;
+    std::cout << "s1 == s2: " << (s1 == s2) << " (expected: true)" << std::endl;
+    std::cout << "s1 != s2: " << (s1 != s2) << " (expected: false)" << std::endl;
+
+    // --- Segment vs Isocele (should throw) ---
+    Isocele i1("I1", 25, Colour::GREEN);
+    std::cout << "\n=== Segment vs Isocele (should throw) ===" << std::endl;
+    try
+    {
+        auto res = s1 < i1;
+        std::cerr << "ERROR: Should have thrown" << std::endl;
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Expected error: " << e.what() << std::endl;
+    }
+    try
+    {
+        auto res = s1 == i1;
+        std::cerr << "ERROR: Should have thrown" << std::endl;
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Expected error: " << e.what() << std::endl;
+    }
+
+    // --- Segment vs Polygon (should throw) ---
+    Polygon p1("P1", 15, Colour::YELLOW, 6);
+    std::cout << "\n=== Segment vs Polygon (should throw) ===" << std::endl;
+    try
+    {
+        auto res = s1 <= p1;
+        std::cerr << "ERROR: Should have thrown" << std::endl;
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Expected error: " << e.what() << std::endl;
+    }
+
+    // --- Isocele vs Isocele (same peak angle) ---
+    // Note: peakAngle is random, so we use the same object to test equality
+    std::cout << "\n=== Isocele vs Isocele (same object) ===" << std::endl;
+    std::cout << "i1 < i1:  " << (i1 < i1) << " (expected: false)" << std::endl;
+    std::cout << "i1 > i1:  " << (i1 > i1) << " (expected: false)" << std::endl;
+    std::cout << "i1 <= i1: " << (i1 <= i1) << " (expected: true)" << std::endl;
+    std::cout << "i1 >= i1: " << (i1 >= i1) << " (expected: true)" << std::endl;
+    std::cout << "i1 == i1: " << (i1 == i1) << " (expected: true)" << std::endl;
+    std::cout << "i1 != i1: " << (i1 != i1) << " (expected: false)" << std::endl;
+
+    // --- Isocele vs Isocele (different peak angles) ---
+    // We use RobotSurgeon to set specific peak angles for deterministic testing
+    Isocele i2("I2", 30, Colour::RED);
+    RobotSurgeon surgeon("TestSurgeon");
+    surgeon.modifyPeakAngle(i1, 30);
+    surgeon.modifyPeakAngle(i2, 50);
+
+    std::cout << "\n=== Isocele vs Isocele (different peak angles) ===" << std::endl;
+    std::cout << "i1 peak: " << i1.getPeakAngle() << ", i2 peak: " << i2.getPeakAngle() << std::endl;
+    std::cout << "i1 < i2:  " << (i1 < i2) << " (expected: true)" << std::endl;
+    std::cout << "i1 > i2:  " << (i1 > i2) << " (expected: false)" << std::endl;
+    std::cout << "i1 <= i2: " << (i1 <= i2) << " (expected: true)" << std::endl;
+    std::cout << "i1 >= i2: " << (i1 >= i2) << " (expected: false)" << std::endl;
+    std::cout << "i1 == i2: " << (i1 == i2) << " (expected: false)" << std::endl;
+    std::cout << "i1 != i2: " << (i1 != i2) << " (expected: true)" << std::endl;
+
+    // --- Isocele vs Polygon ---
+    std::cout << "\n=== Isocele vs Polygon ===" << std::endl;
+    std::cout << "i1 < p1:  " << (i1 < p1) << " (expected: true - Isocele inferior to Polygon)" << std::endl;
+    std::cout << "i1 > p1:  " << (i1 > p1) << " (expected: false)" << std::endl;
+    std::cout << "i1 <= p1: " << (i1 <= p1) << " (expected: true)" << std::endl;
+    std::cout << "i1 >= p1: " << (i1 >= p1) << " (expected: false)" << std::endl;
+    std::cout << "i1 == p1: " << (i1 == p1) << " (expected: false)" << std::endl;
+    std::cout << "i1 != p1: " << (i1 != p1) << " (expected: true)" << std::endl;
+
+    // --- Isocele vs Segment (should throw) ---
+    std::cout << "\n=== Isocele vs Segment (should throw) ===" << std::endl;
+    try
+    {
+        auto res = i1 < s1;
+        std::cerr << "ERROR: Should have thrown" << std::endl;
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Expected error: " << e.what() << std::endl;
+    }
+
+    // --- Polygon vs Polygon (same sides) ---
+    Polygon p2("P2", 20, Colour::BLUE, 6);
+    std::cout << "\n=== Polygon vs Polygon (same sides) ===" << std::endl;
+    std::cout << "p1 sides: " << p1.getNbSides() << ", p2 sides: " << p2.getNbSides() << std::endl;
+    std::cout << "p1 < p2:  " << (p1 < p2) << " (expected: false)" << std::endl;
+    std::cout << "p1 > p2:  " << (p1 > p2) << " (expected: false)" << std::endl;
+    std::cout << "p1 <= p2: " << (p1 <= p2) << " (expected: true)" << std::endl;
+    std::cout << "p1 >= p2: " << (p1 >= p2) << " (expected: true)" << std::endl;
+    std::cout << "p1 == p2: " << (p1 == p2) << " (expected: true)" << std::endl;
+    std::cout << "p1 != p2: " << (p1 != p2) << " (expected: false)" << std::endl;
+
+    // --- Polygon vs Polygon (different sides) ---
+    Polygon p3("P3", 25, Colour::RED, 10);
+    std::cout << "\n=== Polygon vs Polygon (different sides) ===" << std::endl;
+    std::cout << "p1 sides: " << p1.getNbSides() << ", p3 sides: " << p3.getNbSides() << std::endl;
+    std::cout << "p1 < p3:  " << (p1 < p3) << " (expected: true)" << std::endl;
+    std::cout << "p1 > p3:  " << (p1 > p3) << " (expected: false)" << std::endl;
+    std::cout << "p1 <= p3: " << (p1 <= p3) << " (expected: true)" << std::endl;
+    std::cout << "p1 >= p3: " << (p1 >= p3) << " (expected: false)" << std::endl;
+    std::cout << "p1 == p3: " << (p1 == p3) << " (expected: false)" << std::endl;
+    std::cout << "p1 != p3: " << (p1 != p3) << " (expected: true)" << std::endl;
+
+    // --- Polygon vs Isocele ---
+    std::cout << "\n=== Polygon vs Isocele ===" << std::endl;
+    std::cout << "p1 < i1:  " << (p1 < i1) << " (expected: false - Polygon superior to Isocele)" << std::endl;
+    std::cout << "p1 > i1:  " << (p1 > i1) << " (expected: true)" << std::endl;
+    std::cout << "p1 <= i1: " << (p1 <= i1) << " (expected: false)" << std::endl;
+    std::cout << "p1 >= i1: " << (p1 >= i1) << " (expected: true)" << std::endl;
+    std::cout << "p1 == i1: " << (p1 == i1) << " (expected: false)" << std::endl;
+    std::cout << "p1 != i1: " << (p1 != i1) << " (expected: true)" << std::endl;
+
+    // --- Polygon vs Segment (should throw) ---
+    std::cout << "\n=== Polygon vs Segment (should throw) ===" << std::endl;
+    try
+    {
+        auto res = p1 >= s1;
+        std::cerr << "ERROR: Should have thrown" << std::endl;
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Expected error: " << e.what() << std::endl;
+    }
 }
 
 int main()
 {
     Q10();
+    std::cout << "\n\n";
+    Q11();
 }

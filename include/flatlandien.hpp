@@ -20,9 +20,9 @@ namespace flatland
     constexpr int MAX_NB_SIZE = 20;
 
     // use static here so that the variables last the whole lifecycle of the program.
-    inline  int numberOfSegments{0};
-    inline  int numberOfIsocele{0};
-    inline  int numberOfPolygon{0};
+    inline int numberOfSegments{0};
+    inline int numberOfIsocele{0};
+    inline int numberOfPolygon{0};
 
     void printStatistics();
 
@@ -56,19 +56,19 @@ namespace flatland
 
         // Prints the Flatlander to any stream.
         // Prints the common members of Flatlanders
-        virtual void print(std::ostream& os) const = 0;
+        virtual void print(std::ostream &os) const = 0;
 
-        void present() const;       // Abstract present in Flatlander
+        void present() const; // Abstract present in Flatlander
 
-        static Flatlander* newFlatlander(const Segment &mother, const FlatlanderMale &father);
+        static Flatlander *newFlatlander(const Segment &mother, const FlatlanderMale &father);
 
         // Operator overload for Flatlanders
-        virtual bool operator<(const Flatlander& rhs) const = 0;
-        // virtual bool operator>(const Flatlander& rhs) const = 0;
-        // virtual bool operator<= (const Flatlander& rhs) const = 0;
-        // virtual bool operator>= (const Flatlander& rhs) const = 0;
-        // virtual bool operator==(const Flatlander& rhs) const = 0;
-        // virtual bool operator!=(const Flatlander& rhs) const = 0;
+        virtual bool operator<(const Flatlander &rhs) const = 0;
+        virtual bool operator>(const Flatlander& rhs) const = 0;
+        virtual bool operator<=(const Flatlander& rhs) const = 0;
+        virtual bool operator>=(const Flatlander& rhs) const = 0;
+        virtual bool operator==(const Flatlander& rhs) const = 0;
+        virtual bool operator!=(const Flatlander& rhs) const = 0;
 
     private:
         std::string name{};
@@ -78,10 +78,10 @@ namespace flatland
     };
 
     //--------------------------------------------------------
-    //Operator overload for displaying the information of
-    //the Flatlander object.
+    // Operator overload for displaying the information of
+    // the Flatlander object.
     //--------------------------------------------------------
-    std::ostream& operator<<(std::ostream& os, const Flatlander& f);
+    std::ostream &operator<<(std::ostream &os, const Flatlander &f);
 
     // ------------------------------------------------------
     // Father: an abstract representation of an adult male Flatlander (Polygone or Isocele)
@@ -103,14 +103,14 @@ namespace flatland
     public:
         friend class RobotSurgeon;
         Segment(const std::string &n, int s, Colour c);
-        void print(std::ostream& os) const override;
+        void print(std::ostream &os) const override;
 
-        bool operator< (const Flatlander& rhs) const override;
-        // bool operator> (const Flatlander& rhs) const override;
-        // bool operator<= (const Flatlander& rhs) const override;
-        // bool operator>= (const Flatlander& rhs) const override;
-        // bool operator==(const Flatlander& rhs) const override;
-        // bool operator!=(const Flatlander& rhs) const override;
+        bool operator<(const Flatlander &rhs) const override;
+        bool operator> (const Flatlander& rhs) const override;
+        bool operator<=(const Flatlander& rhs) const override;
+        bool operator>=(const Flatlander& rhs) const override;
+        bool operator==(const Flatlander& rhs) const override;
+        bool operator!=(const Flatlander& rhs) const override;
     };
 
     // ----------------------------------------------------
@@ -122,14 +122,14 @@ namespace flatland
         friend class RobotSurgeon;
         Isocele(const std::string &n, int s, Colour c);
         int getPeakAngle() const;
-        void print(std::ostream& os) const override;
+        void print(std::ostream &os) const override;
 
-        bool operator< (const Flatlander& rhs) const override;
-        // bool operator> (const Flatlander& rhs) const override;
-        // bool operator<= (const Flatlander& rhs) const override;
-        // bool operator>= (const Flatlander& rhs) const override;
-        // bool operator==(const Flatlander& rhs) const override;
-        // bool operator!=(const Flatlander& rhs) const override;
+        bool operator<(const Flatlander &rhs) const override;
+        bool operator> (const Flatlander& rhs) const override;
+        bool operator<=(const Flatlander& rhs) const override;
+        bool operator>=(const Flatlander& rhs) const override;
+        bool operator==(const Flatlander& rhs) const override;
+        bool operator!=(const Flatlander& rhs) const override;
 
     private:
         int peakAngle{};
@@ -144,14 +144,14 @@ namespace flatland
         friend class RobotSurgeon;
         Polygon(const std::string &n, int s, Colour c, int sides);
         int getNbSides() const;
-        void print(std::ostream& os) const override;
+        void print(std::ostream &os) const override;
 
-        bool operator< (const Flatlander& rhs) const override;
-        // bool operator> (const Flatlander& rhs) const override;
-        // bool operator<= (const Flatlander& rhs) const override;
-        // bool operator>= (const Flatlander& rhs) const override;
-        // bool operator==(const Flatlander& rhs) const override;
-        // bool operator!=(const Flatlander& rhs) const override;
+        bool operator<(const Flatlander &rhs) const override;
+        bool operator> (const Flatlander& rhs) const override;
+        bool operator<=(const Flatlander& rhs) const override;
+        bool operator>=(const Flatlander& rhs) const override;
+        bool operator==(const Flatlander& rhs) const override;
+        bool operator!=(const Flatlander& rhs) const override;
 
     private:
         int nbSides{};
@@ -163,7 +163,7 @@ namespace flatland
     class RobotSurgeon
     {
     public:
-        explicit RobotSurgeon( const std::string& n);
+        explicit RobotSurgeon(const std::string &n);
         std::string getName() const; // immutable name
         static void modifyColour(Flatlander &flatlander, Colour c);
         static void modifyPeakAngle(Isocele &i, int a);
@@ -176,7 +176,7 @@ namespace flatland
     //-------------------------------------------------------------
     // A generic predicate function for the find function
     //-------------------------------------------------------------
-    using Predicate = bool(const Flatlander&, int, int);
+    using Predicate = bool(const Flatlander &, int, int);
 
     // ----------------------------------------------------------------------------
     // Family: aggregates a family, does not own any member of the family
@@ -190,24 +190,24 @@ namespace flatland
         // Checks that the family complies with Flatlandian society rules
         static Family newFamily(FlatlanderMale *f = nullptr, Segment *m = nullptr);
 
-        ~Family(); // unregisters parents and children from static list
-        Family(const Family &) = delete; // prevent copies because it will put members in two different families
-        Family& operator=(const Family &) = delete; // prevent assignment constructor for copy
+        ~Family();                                  // unregisters parents and children from static list
+        Family(const Family &) = delete;            // prevent copies because it will put members in two different families
+        Family &operator=(const Family &) = delete; // prevent assignment constructor for copy
 
         size_t getChildCount() const;
         std::string getName() const;
         void setName(const std::string &n);
-        FlatlanderMale* getFather() const;
+        FlatlanderMale *getFather() const;
         void setFather(FlatlanderMale *f);
         Segment *getMother() const;
         void setMother(Segment *m);
-        Flatlander *findChild(const std::string& n) const;
-        const std::vector<Flatlander*> &getChildren() const;
+        Flatlander *findChild(const std::string &n) const;
+        const std::vector<Flatlander *> &getChildren() const;
         bool adoptChild(Flatlander *c);
 
         // Creates a child and links it to the family, ownership is transferred to the caller.
         // The function warns the caller about ignoring the result.
-        [[nodiscard]]Flatlander* newChild();
+        [[nodiscard]] Flatlander *newChild();
 
         void present() const;
 
@@ -217,7 +217,7 @@ namespace flatland
         // NB: making it a member function so that it can access private
         // members in the family class.
         //-------------------------------------------------------------
-        std::vector<Flatlander*> findAll(Predicate* pred, int v1=0, int v2=0) const;
+        std::vector<Flatlander *> findAll(Predicate *pred, int v1 = 0, int v2 = 0) const;
 
     private:
         // Private: to ensure that creation of family matches the Flatlandian society rules
@@ -228,19 +228,19 @@ namespace flatland
         // It is non owning, so it contains pointers to exisiting flatlanders.
         // The purpose is to check flatlanders that are already parents or children to someone.
         // This prevents any form of polygamy, or children with more than 2 parents
-        static std::vector<const Flatlander*> registeredParents; // fathers and mothers in a family
-        static std::vector<const Flatlander*> registeredChildren; // children in a family
+        static std::vector<const Flatlander *> registeredParents;  // fathers and mothers in a family
+        static std::vector<const Flatlander *> registeredChildren; // children in a family
 
         std::string name{};
         FlatlanderMale *father;
         Segment *mother;
-        std::vector<Flatlander*> children{};
+        std::vector<Flatlander *> children{};
     };
 
     //---------------------------------------------------------------
     // A function to present the details of a flatlandien with the label
     // --------------------------------------------------------------
-    static void presentMember(const std::string& label, const Flatlander* f)
+    static void presentMember(const std::string &label, const Flatlander *f)
     {
         std::cout << label << ": ";
         if (f != nullptr)

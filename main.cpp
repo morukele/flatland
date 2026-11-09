@@ -299,6 +299,10 @@ bool isDead(const Flatlander& f, int /*unused*/, int /*unused*/)
     return !f.isAlive();
 }
 
+bool comp(const FlatlanderMale& f1, const FlatlanderMale& f2)
+{
+}
+
 auto hasSizeBetweenLambda = [](const Flatlander& f, int v1, int v2) { return f.getSize() >= v1 && f.getSize() <= v2; };
 auto isIsoceleTriangleLambda = [](const Flatlander& f, int v1, int /*unused*/)
 {

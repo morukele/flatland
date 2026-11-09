@@ -299,10 +299,6 @@ bool isDead(const Flatlander& f, int /*unused*/, int /*unused*/)
     return !f.isAlive();
 }
 
-bool comp(const FlatlanderMale& f1, const FlatlanderMale& f2)
-{
-}
-
 auto hasSizeBetweenLambda = [](const Flatlander& f, int v1, int v2) { return f.getSize() >= v1 && f.getSize() <= v2; };
 auto isIsoceleTriangleLambda = [](const Flatlander& f, int v1, int /*unused*/)
 {
@@ -557,9 +553,57 @@ static void Q11()
     }
 }
 
+static std::vector<std::unique_ptr<Flatlander>> createMaleFlatlanders(const int n)
+{
+    std::vector<std::unique_ptr<Flatlander>> v; // using unique pointer because abstract
+
+    for (int i{0}; i < n; i++)
+    {
+        constexpr int upper = 50;
+        // 50% Polygone
+        if (randInt(0, 1) == 0)
+        {
+            const auto name = "p" + std::to_string(i);
+            auto p = std::make_unique<Polygon>(name, randInt(0, upper), randomColour(), randInt(0, upper));
+            v.push_back(std::move(p));
+        }
+        else
+        {
+            // 50% Isocele
+            const auto name = "i" + std::to_string(i);
+            auto p = std::make_unique<Isocele>(name, randInt(0, upper), randomColour());
+            v.push_back(std::move(p));
+        }
+    }
+    return v;
+}
+
+bool comp(const std::unique_ptr<Flatlander>& f1, const std::unique_ptr<Flatlander>& f2)
+{
+    return f1 > f2;
+}
+
+static void Q12()
+{
+    auto flatlanders = createMaleFlatlanders(10);
+
+    std::cout << "====== Before Sort ======" << std::endl;
+    for (const auto& f : flatlanders)
+    {
+        f->present();
+    }
+
+    std::cout << "\n";
+
+    std::cout << "====== After Sort ======" << std::endl;
+    std::sort(flatlanders.begin(), flatlanders.end(), comp);
+    for (const auto& f : flatlanders)
+    {
+        f->present();
+    }
+}
+
 int main()
 {
-    Q10();
-    std::cout << "\n\n";
-    Q11();
+    Q12();
 }

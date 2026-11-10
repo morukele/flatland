@@ -1,2 +1,27 @@
+# CMake build artifacts (in-source builds)
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+build.ninja
+Testing/
+
+# CMake build artifacts (out-of-source builds)
 /build
-/CMakeFiles
+
+# Build output binaries
+flatland
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.vscode/
+*.vcxproj
+*.vcxproj.filters
+*.sln
+*.suo
+
+# macOS
+.DS_Store

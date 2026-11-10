@@ -1,16 +1,22 @@
 # Flatland
 
-Flatland is a small C++23 geometry model inspired by Edwin A. Abbott's _Flatland_. It demonstrates basic object-oriented C++ concepts through geometric shapes, encapsulation, friend classes, namespaces, enum classes, validation helpers, and CMake builds.
+Flatland is a C++23 simulation inspired by Edwin A. Abbott's _Flatland_. It demonstrates object-oriented C++ concepts including inheritance, polymorphism, encapsulation, friend classes, namespaces, enum classes, custom exceptions, operator overloading, smart pointers, predicate functions, and CMake builds.
 
 ## Features
 
-- `Segment`, `Isocele`, and `Polygon` shape classes.
-- Shape names, sizes, and colours with getters and setters.
-- `RobotSurgeon`, a friend class that can modify protected shape properties.
-- Size, angle, and polygon-side limits.
-- Conversion of `Colour` enum values to readable text.
-- Runtime statistics for the number of constructed shapes.
-- A simple executable demonstration in `main.cpp`.
+- **Inheritance hierarchy**: `Flatlander` abstract base class with `FlatlanderMale`, `Segment`, `Isocele`, and `Polygon` derived classes.
+- **Family system**: `Family` class that manages parent-child relationships with registry-based validation to enforce monogamy and unique parentage.
+- **Shape properties**: Names, sizes, and colours with getters and setters, validated against configurable limits.
+- **RobotSurgeon**: A friend class that can modify protected shape properties (colour, peak angle, number of sides).
+- **Lifecycle management**: `kill()` and `isAlive()` methods for tracking flatlander state.
+- **Comparison operators**: Full set of comparison operators (`<`, `>`, `<=`, `>=`, `==`, `!=`) for flatlanders.
+- **Stream output**: Overloaded `operator<<` for convenient console and stream output.
+- **Custom exceptions**: `invalid_intarg` exception with min/max range information for value validation.
+- **Colour utilities**: `Colour` enum with text conversion and random colour generation.
+- **Random utilities**: `randInt()` and `randomColour()` helpers for generating random values.
+- **Predicate functions**: `BindSecond` functor and predicate-based searching within families.
+- **Runtime statistics**: Tracking of constructed shape counts across the program lifetime.
+- **Demonstration program**: `main.cpp` contains extensive test scenarios exercising all features.
 
 ## Requirements
 
@@ -73,12 +79,12 @@ The statistics are cumulative for the lifetime of the process. The sample create
 ```
 
 - `CMakeLists.txt`: project and executable configuration.
-- `main.cpp`: demonstration program and sample usage.
-- `include/flatlandien.hpp`: public shape and surgeon declarations.
-- `include/util.hpp`: `Colour`, colour conversion, and clamping utilities.
-- `src/flatlandien.cpp`: class method and statistics implementations.
+- `main.cpp`: demonstration program with multiple test scenarios.
+- `include/flatlandien.hpp`: all class declarations (Flatlander hierarchy, Family, RobotSurgeon, operators, predicates).
+- `include/util.hpp`: `Colour` enum, colour conversion, `clamp()`, random utilities, and `invalid_intarg` exception.
+- `src/flatlandien.cpp`: class method implementations and statistics.
 
-Generated build files belong in `build/` and should not be committed to source control.
+Generated build files belong in `build/` and should not be committed to source control. Common build artifacts are listed in `.gitignore`.
 
 ## Namespace
 
@@ -101,6 +107,118 @@ int main()
 
 ## Core API
 
+### Inheritance Hierarchy
+
+The class hierarchy models the organisms of Flatland:
+
+```
+Flatlander (abstract base)
+├── Segment (female)
+└── FlatlanderMale (abstract male base)
+    ├── Isocele (male, isosceles triangle)
+    └── Polygon (male, multi-sided)
+```
+
+#### `Flatlander`
+
+Abstract base class for all flatlanders. Provides:
+
+- A constructor accepting a name, size, and colour.
+- `getName()` and `setName()`.
+- `getSize()` and `setSize()`.
+- `getColour()`.
+- `kill()` and `isAlive()` for lifecycle management.
+- `present()` for console output.
+- `print(std::ostream&)` — pure virtual, implemented by each derived class.
+- `newFlatlander(const Segment&, const FlatlanderMale&)` — static factory that creates a child of the given parents.
+
+#### `FlatlanderMale`
+
+Abstract intermediate base for male flatlanders (`Isocele` and `Polygon`). Inherits from `Flatlander` and provides no additional public members beyond the protected constructor.
+
+#### `Segment`
+
+Represents a female flatlander. Inherits from `Flatlander`. No additional members beyond the base class.
+
+#### `Isocele`
+
+Represents a male flatlander shaped as an isosceles triangle. Inherits from `FlatlanderMale`. Additionally exposes:
+
+- `getPeakAngle()` — returns the peak angle of the triangle.
+
+The class is named `Isocele` in the current API. It represents an isosceles triangle, but the spelling is retained for API consistency with the project.
+
+#### `Polygon`
+
+Represents a male flatlander with multiple sides. Inherits from `FlatlanderMale`. Constructor accepts an additional `sides` parameter. Additionally exposes:
+
+- `getNbSides()` — returns the number of sides.
+
+### Comparison Operators
+
+The following free comparison operators are available for `Flatlander` objects:
+
+```cpp
+bool operator<(const Flatlander &lhs, const Flatlander &rhs);
+bool operator>(const Flatlander &lhs, const Flatlander &rhs);
+bool operator<=(const Flatlander &lhs, const Flatlander &rhs);
+bool operator>=(const Flatlander &lhs, const Flatlander &rhs);
+bool operator==(const Flatlander &lhs, const Flatlander &rhs);
+bool operator!=(const Flatlander &lhs, const Flatlander &rhs);
+```
+
+### Stream Output
+
+`operator<<` is overloaded so a flatlander can be printed directly to any output stream:
+
+```cpp
+std::cout << segment << std::endl;
+```
+
+### `Family`
+
+The `Family` class aggregates a family with parent-child relationships. It holds non-owning pointers to its members — the caller is responsible for lifetime management.
+
+Key features:
+
+- `newFamily(FlatlanderMale*, Segment*)` — static factory that validates the parents against the global registry.
+- `adoptChild(Flatlander*)` — adds a child to the family.
+- `newChild()` — creates a child from the family's parents; ownership transfers to the caller.
+- `getChildCount()`, `getChildren()`, `findChild(const std::string&)` — query children.
+- `getFather()`, `setFather()`, `getMother()`, `setMother()` — manage parents.
+- `getName()`, `setName()` — family name.
+- `present()` — prints the entire family.
+- `findAll(Predicate*, int, int)` — searches children matching a predicate function.
+
+The class maintains static registries (`registeredParents`, `registeredChildren`) to enforce Flatlandian society rules: no polygamy and no child with more than two parents. Copying and assignment are deleted.
+
+### `RobotSurgeon`
+
+`RobotSurgeon` has overloads for changing the colour of each shape type:
+
+```cpp
+flatland::RobotSurgeon surgeon{"Dr BES"};
+surgeon.modifyColour(segment, flatland::Colour::BLUE);
+```
+
+It can also modify the peak angle of an `Isocele` and the number of sides of a `Polygon`:
+
+```cpp
+surgeon.modifyPeakAngle(triangle, 45);
+surgeon.modifyNbSides(polygon, 6);
+```
+
+The surgeon is declared as a friend of the shape classes so these operations can update their private state.
+
+### Predicates and `BindSecond`
+
+The `Family::findAll()` method accepts a `Predicate` function pointer for filtering children. The `BindSecond` functor adapts a two-argument `CompIfPredicate` into a single-argument callable suitable for algorithms like `std::find_if()`:
+
+```cpp
+using Predicate = bool(const Flatlander &, int, int);
+using CompIfPredicate = bool(const Flatlander*, int);
+```
+
 ### `Colour`
 
 `Colour` is a scoped enum with the following values:
@@ -122,37 +240,32 @@ std::string text = flatland::convertColourEnumToText(
     flatland::Colour::GREEN);
 ```
 
-### Shape classes
 
-Each shape currently provides:
+### Custom Exceptions
 
-- A constructor accepting a name, size, and colour.
-- `getName()` and `setName()`.
-- `getSize()` and `setSize()`.
-- A colour getter.
-- `present()` for console output.
-
-`Isocele` additionally exposes `getPeakAngle()`, while `Polygon` exposes `getNbSides()`.
-
-The class is named `Isocele` in the current API. It represents an isosceles triangle, but the spelling is retained for API consistency with the project.
-
-### `RobotSurgeon`
-
-`RobotSurgeon` has overloads for changing the colour of each shape type:
+The project defines `invalid_intarg`, a subclass of `std::invalid_argument`, for value validation errors:
 
 ```cpp
-flatland::RobotSurgeon surgeon{"Dr BES"};
-surgeon.modifyColour(segment, flatland::Colour::BLUE);
+try {
+    segment.setSize(200); // exceeds MAX_SIZE
+} catch (const invalid_intarg& e) {
+    std::cerr << e.what() << std::endl;
+    int corrected = clamp(e.getInvalidValue(), e.getMax(), e.getMin());
+}
 ```
 
-It can also modify the peak angle of an `Isocele` and the number of sides of a `Polygon`:
+It provides `getInvalidValue()`, `getMin()`, and `getMax()` so the caller can correct the value.
+
+### Random Utilities
+
+`util.hpp` provides helpers for generating random values:
 
 ```cpp
-surgeon.modifyPeakAngle(triangle, 45);
-surgeon.modifyNbSides(polygon, 6);
+int value = flatland::randInt(1, 10);      // random int in [1, 10]
+Colour c = flatland::randomColour();       // random colour enum value
 ```
 
-The surgeon is declared as a friend of the shape classes so these operations can update their private state.
+These use a static `std::mt19937` generator seeded with `std::random_device`.
 
 ### Limits
 
@@ -172,6 +285,8 @@ Values are normalized by the project’s `clamp()` helper when changed through t
 - The `flatland` namespace prevents collisions with unrelated code.
 - `Colour` is a scoped enum, so values must be written as `flatland::Colour::RED` rather than simply `RED`.
 - Shape counts are maintained by the shape constructors and displayed by `printStatistics()`.
+- The `Family` class uses static registries to enforce monogamy and unique parentage across all families.
+- `invalid_intarg` exceptions are thrown when values exceed configured limits, allowing callers to clamp and retry.
 - The current project is an educational example rather than a reusable geometry library. It does not currently provide unit tests, installation rules, package configuration, or a formal error-reporting API.
 
 ## Development Workflow

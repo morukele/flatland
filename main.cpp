@@ -6,27 +6,6 @@
 
 using namespace flatland;
 
-/**
- * Helper that runs an operation with a mutable integer value.
- * If the operation throws invalid_intarg, it corrects the value by
- * clamping to [min, max], logs the correction to stderr, and retries.
- */
-static void runWithCorrection(int& value, const std::function<void()>& testFunc)
-{
-    try
-    {
-        testFunc();
-    }
-    catch (const invalid_intarg& e)
-    {
-        int corrected = clamp(e.getInvalidValue(), e.getMax(), e.getMin());
-        std::cerr << "Correction: " << e.what()
-                  << " -> clamped to " << corrected << std::endl;
-        value = corrected;
-        testFunc();
-    }
-}
-
 /*
  * Test function 1
  */
@@ -585,7 +564,8 @@ static std::vector<std::unique_ptr<Flatlander>> createMaleFlatlanders(const int 
         if (randInt(0, 1) == 0)
         {
             const auto name = "p" + std::to_string(i);
-            auto p = std::make_unique<Polygon>(name, randInt(MIN_SIZE, MAX_SIZE), randomColour(), randInt(MIN_NB_SIZE, MAX_NB_SIZE));
+            auto p = std::make_unique<Polygon>(name, randInt(MIN_SIZE, MAX_SIZE), randomColour(),
+                                               randInt(MIN_NB_SIZE, MAX_NB_SIZE));
             v.push_back(std::move(p));
         }
         else
@@ -644,6 +624,106 @@ static void Q13()
     res->present();
 }
 
+static void Q14()
+{
+    std::cout << "----------------Running Test 14: Association<Segment>------------" << std::endl;
+
+    int minContrib = 100;
+    Association<Segment> segAssociation("Segment Club", minContrib);
+
+    std::cout << "Association name: " << segAssociation.getName() << std::endl;
+    std::cout << "Minimum contribution: " << segAssociation.getMinimumContribution() << std::endl;
+
+    Segment s1("Sara", 10, Colour::RED);
+    Segment s2("Tina", 15, Colour::BLUE);
+    Segment s3("Uma", 20, Colour::GREEN);
+
+    int c1 = 150;
+    int c2 = 200;
+    int c3 = 50; // below minimum — should fail
+
+    std::cout << std::boolalpha;
+    std::cout << "Register Sara (150): " << segAssociation.registerMember(&s1, c1) << std::endl;
+    std::cout << "Register Tina (200): " << segAssociation.registerMember(&s2, c2) << std::endl;
+    std::cout << "Register Uma (50):   " << segAssociation.registerMember(&s3, c3) << std::endl;
+
+    std::cout << "Total contribution: " << segAssociation.getTotalContribution() << std::endl;
+    std::cout << "Member count: " << segAssociation.getMembers().size() << std::endl;
+
+    // Rename the association
+    segAssociation.setName("Elite Segment Club");
+    std::cout << "Updated name: " << segAssociation.getName() << std::endl;
+
+    // Update minimum contribution
+    int newMin = 500;
+    segAssociation.setMinimumContribution(newMin);
+    std::cout << "Updated minimum contribution: " << segAssociation.getMinimumContribution() << std::endl;
+}
+
+static void Q15()
+{
+    std::cout << "----------------Running Test 15: Association<Polygon>------------" << std::endl;
+
+    int minContrib = 200;
+    Association<Polygon> polyAssociation("Polygon Alliance", minContrib);
+
+    Polygon p1("Alpha", 25, Colour::RED, 5);
+    Polygon p2("Beta", 30, Colour::BLUE, 8);
+    Polygon p3("Gamma", 35, Colour::GREEN, 10);
+
+    int c1 = 250;
+    int c2 = 300;
+    int c3 = 100; // below minimum — should fail
+
+    std::cout << std::boolalpha;
+    std::cout << "Register Alpha (250): " << polyAssociation.registerMember(&p1, c1) << std::endl;
+    std::cout << "Register Beta (300):  " << polyAssociation.registerMember(&p2, c2) << std::endl;
+    std::cout << "Register Gamma (100): " << polyAssociation.registerMember(&p3, c3) << std::endl;
+
+    std::cout << "Total contribution: " << polyAssociation.getTotalContribution() << std::endl;
+    std::cout << "Member count: " << polyAssociation.getMembers().size() << std::endl;
+
+    // List registered members
+    auto members = polyAssociation.getMembers();
+    std::cout << "Registered members:" << std::endl;
+    for (auto* m : members)
+    {
+        std::cout << "  ";
+        m->present();
+    }
+}
+
+static void Q16()
+{
+    std::cout << "----------------Running Test 16: Association<Isocele>------------" << std::endl;
+
+    int minContrib = 150;
+    Association<Isocele> isoAssociation("Isocele Circle", minContrib);
+
+    Isocele i1("Delta", 20, Colour::YELLOW);
+    Isocele i2("Epsilon", 25, Colour::BLACK);
+
+    int c1 = 180;
+    int c2 = 120; // below minimum — should fail
+
+    std::cout << std::boolalpha;
+    std::cout << "Register Delta (180):  " << isoAssociation.registerMember(&i1, c1) << std::endl;
+    std::cout << "Register Epsilon (120): " << isoAssociation.registerMember(&i2, c2) << std::endl;
+
+    std::cout << "Total contribution: " << isoAssociation.getTotalContribution() << std::endl;
+    std::cout << "Member count: " << isoAssociation.getMembers().size() << std::endl;
+
+    // Lower the minimum and try again
+    int lowerMin = 100;
+    isoAssociation.setMinimumContribution(lowerMin);
+    std::cout << "Lowered minimum to: " << isoAssociation.getMinimumContribution() << std::endl;
+
+    int c3 = 120; // now above the new minimum
+    std::cout << "Register Epsilon (120) after lowering min: " << isoAssociation.registerMember(&i2, c3) << std::endl;
+    std::cout << "Total contribution: " << isoAssociation.getTotalContribution() << std::endl;
+    std::cout << "Member count: " << isoAssociation.getMembers().size() << std::endl;
+}
+
 int main()
 {
     // Run Q13 normally
@@ -651,49 +731,16 @@ int main()
 
     std::cout << std::endl;
 
-    // Demonstrate invalid_intarg correction: the invalid size (200) will be
-    // caught, clamped to MAX_SIZE (100), logged to stderr, and retried.
-    std::cout << "----------------Running invalid_intarg correction demo------------" << std::endl;
-    {
-        int testSize = 200; // intentionally out of range [MIN_SIZE, MAX_SIZE]
-        auto testFunc = [&testSize]()
-        {
-            std::cout << "Attempting to create Flatlander with size " << testSize << std::endl;
-            Segment seg("CorrectedSegment", testSize, Colour::RED);
-            seg.present();
-        };
-        runWithCorrection(testSize, testFunc);
-    }
+    // Test Association<Segment>
+    Q14();
 
     std::cout << std::endl;
 
-    // Demonstrate correction for RobotSurgeon::modifyPeakAngle with invalid angle
-    std::cout << "----------------Running peak angle correction demo------------" << std::endl;
-    {
-        Isocele iso("AngleTest", 20, Colour::BLUE);
-        int testAngle = 200; // intentionally out of range [MIN_ANGLE, MAX_ANGLE]
-        auto testFunc = [&testAngle, &iso]()
-        {
-            std::cout << "Attempting to set peak angle to " << testAngle << std::endl;
-            RobotSurgeon surgeon("Dr Correct");
-            surgeon.modifyPeakAngle(iso, testAngle);
-            std::cout << "Peak angle set to " << iso.getPeakAngle() << std::endl;
-        };
-        runWithCorrection(testAngle, testFunc);
-    }
+    // Test Association<Polygon>
+    Q15();
 
     std::cout << std::endl;
 
-    // Demonstrate correction for Polygon sides with invalid value
-    std::cout << "----------------Running polygon sides correction demo------------" << std::endl;
-    {
-        int testSides = 50; // intentionally out of range [MIN_NB_SIZE, MAX_NB_SIZE]
-        auto testFunc = [&testSides]()
-        {
-            std::cout << "Attempting to create Polygon with " << testSides << " sides" << std::endl;
-            Polygon poly("CorrectedPolygon", 20, Colour::GREEN, testSides);
-            poly.present();
-        };
-        runWithCorrection(testSides, testFunc);
-    }
+    // Test Association<Isocele>
+    Q16();
 }

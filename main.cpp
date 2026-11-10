@@ -2,8 +2,30 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <functional>
 
 using namespace flatland;
+
+/**
+ * Helper that runs an operation with a mutable integer value.
+ * If the operation throws invalid_intarg, it corrects the value by
+ * clamping to [min, max], logs the correction to stderr, and retries.
+ */
+static void runWithCorrection(int& value, const std::function<void()>& testFunc)
+{
+    try
+    {
+        testFunc();
+    }
+    catch (const invalid_intarg& e)
+    {
+        int corrected = clamp(e.getInvalidValue(), e.getMax(), e.getMin());
+        std::cerr << "Correction: " << e.what()
+                  << " -> clamped to " << corrected << std::endl;
+        value = corrected;
+        testFunc();
+    }
+}
 
 /*
  * Test function 1
@@ -45,8 +67,8 @@ static void Q2()
     surgeon.modifyColour(seg, Colour::WHITE);
     surgeon.modifyColour(iso, Colour::YELLOW);
 
-    poly.setSize(200);
-    iso.setSize(4);
+    poly.setSize(50);
+    iso.setSize(10);
     seg.setSize(50);
 
     poly.present();
@@ -559,19 +581,18 @@ static std::vector<std::unique_ptr<Flatlander>> createMaleFlatlanders(const int 
 
     for (int i{0}; i < n; i++)
     {
-        constexpr int upper = 50;
         // 50% Polygone
         if (randInt(0, 1) == 0)
         {
             const auto name = "p" + std::to_string(i);
-            auto p = std::make_unique<Polygon>(name, randInt(0, upper), randomColour(), randInt(0, upper));
+            auto p = std::make_unique<Polygon>(name, randInt(MIN_SIZE, MAX_SIZE), randomColour(), randInt(MIN_NB_SIZE, MAX_NB_SIZE));
             v.push_back(std::move(p));
         }
         else
         {
             // 50% Isocele
             const auto name = "i" + std::to_string(i);
-            auto p = std::make_unique<Isocele>(name, randInt(0, upper), randomColour());
+            auto p = std::make_unique<Isocele>(name, randInt(MIN_SIZE, MAX_SIZE), randomColour());
             v.push_back(std::move(p));
         }
     }
@@ -603,7 +624,76 @@ static void Q12()
     }
 }
 
+bool sizeGreaterThan(const Flatlander* f, const int limit)
+{
+    return f->getSize() > limit;
+}
+
+Flatlander* findIf(const std::vector<std::unique_ptr<Flatlander>>& v, CompIfPredicate* pred, const int value)
+{
+    const auto it = std::find_if(v.begin(), v.end(), BindSecond(pred, value));
+    return it != v.end() ? it->get() : nullptr;
+}
+
+static void Q13()
+{
+    const auto flatlanders = createMaleFlatlanders(10);
+    std::cout << "========== using std::find_if() =========" << std::endl;
+
+    const auto res = findIf(flatlanders, sizeGreaterThan, 40);
+    res->present();
+}
+
 int main()
 {
-    Q12();
+    // Run Q13 normally
+    Q13();
+
+    std::cout << std::endl;
+
+    // Demonstrate invalid_intarg correction: the invalid size (200) will be
+    // caught, clamped to MAX_SIZE (100), logged to stderr, and retried.
+    std::cout << "----------------Running invalid_intarg correction demo------------" << std::endl;
+    {
+        int testSize = 200; // intentionally out of range [MIN_SIZE, MAX_SIZE]
+        auto testFunc = [&testSize]()
+        {
+            std::cout << "Attempting to create Flatlander with size " << testSize << std::endl;
+            Segment seg("CorrectedSegment", testSize, Colour::RED);
+            seg.present();
+        };
+        runWithCorrection(testSize, testFunc);
+    }
+
+    std::cout << std::endl;
+
+    // Demonstrate correction for RobotSurgeon::modifyPeakAngle with invalid angle
+    std::cout << "----------------Running peak angle correction demo------------" << std::endl;
+    {
+        Isocele iso("AngleTest", 20, Colour::BLUE);
+        int testAngle = 200; // intentionally out of range [MIN_ANGLE, MAX_ANGLE]
+        auto testFunc = [&testAngle, &iso]()
+        {
+            std::cout << "Attempting to set peak angle to " << testAngle << std::endl;
+            RobotSurgeon surgeon("Dr Correct");
+            surgeon.modifyPeakAngle(iso, testAngle);
+            std::cout << "Peak angle set to " << iso.getPeakAngle() << std::endl;
+        };
+        runWithCorrection(testAngle, testFunc);
+    }
+
+    std::cout << std::endl;
+
+    // Demonstrate correction for Polygon sides with invalid value
+    std::cout << "----------------Running polygon sides correction demo------------" << std::endl;
+    {
+        int testSides = 50; // intentionally out of range [MIN_NB_SIZE, MAX_NB_SIZE]
+        auto testFunc = [&testSides]()
+        {
+            std::cout << "Attempting to create Polygon with " << testSides << " sides" << std::endl;
+            Polygon poly("CorrectedPolygon", 20, Colour::GREEN, testSides);
+            poly.present();
+        };
+        runWithCorrection(testSides, testFunc);
+    }
 }

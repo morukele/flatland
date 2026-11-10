@@ -55,12 +55,21 @@ namespace flatland
     Flatlander::Flatlander(const std::string& n, const int s, const Colour c)
         : name{n}, size{s}, colour{c}
     {
+        if (s < MIN_SIZE || s > MAX_SIZE) {
+            throw invalid_intarg(s, MIN_SIZE, MAX_SIZE, "Flatlander size");
+        }
     }
 
     std::string Flatlander::getName() const { return name; }
     void Flatlander::setName(const std::string& n) { name = n; }
     int Flatlander::getSize() const { return size; }
-    void Flatlander::setSize(const int s) { size = clamp(s, MAX_SIZE, MIN_SIZE); }
+    void Flatlander::setSize(const int s)
+    {
+        if (s < MIN_SIZE || s > MAX_SIZE) {
+            throw invalid_intarg(s, MIN_SIZE, MAX_SIZE, "Flatlander size");
+        }
+        size = s;
+    }
     Colour Flatlander::getColour() const { return colour; }
     void Flatlander::kill() { alive = false; }
     bool Flatlander::isAlive() const { return alive; }
@@ -85,8 +94,11 @@ namespace flatland
      * Segment Implementation
      */
     Segment::Segment(const std::string& n, const int s, const Colour c)
-        : Flatlander(n, clamp(s, MAX_SIZE, MIN_SIZE), c)
+        : Flatlander(n, s, c)
     {
+        if (s < MIN_SIZE || s > MAX_SIZE) {
+            throw invalid_intarg(s, MIN_SIZE, MAX_SIZE, "Segment size");
+        }
         ++numberOfSegments;
     }
 
@@ -99,8 +111,11 @@ namespace flatland
     /**
      * Isocele Implementation
      */
-    Isocele::Isocele(const std::string& n, int s, Colour c) : FlatlanderMale(n, clamp(s, MAX_SIZE, MIN_SIZE), c)
+    Isocele::Isocele(const std::string& n, int s, Colour c) : FlatlanderMale(n, s, c)
     {
+        if (s < MIN_SIZE || s > MAX_SIZE) {
+            throw invalid_intarg(s, MIN_SIZE, MAX_SIZE, "Isocele size");
+        }
         peakAngle = randInt(MIN_ANGLE, MAX_ANGLE);
         ++numberOfIsocele;
     }
@@ -117,9 +132,15 @@ namespace flatland
      * Polygon Implementation
      */
     Polygon::Polygon(const std::string& n, int s, Colour c, int sides) :
-        FlatlanderMale(n, clamp(s, MAX_SIZE, MIN_SIZE), c),
-        nbSides{clamp(sides, MAX_NB_SIZE, MIN_NB_SIZE)}
+        FlatlanderMale(n, s, c),
+        nbSides{sides}
     {
+        if (s < MIN_SIZE || s > MAX_SIZE) {
+            throw invalid_intarg(s, MIN_SIZE, MAX_SIZE, "Polygon size");
+        }
+        if (sides < MIN_NB_SIZE || sides > MAX_NB_SIZE) {
+            throw invalid_intarg(sides, MIN_NB_SIZE, MAX_NB_SIZE, "Polygon sides");
+        }
         ++numberOfPolygon;
     }
 
@@ -421,8 +442,20 @@ namespace flatland
 
     std::string RobotSurgeon::getName() const { return name; }
     void RobotSurgeon::modifyColour(Flatlander& flatlander, const Colour c) { flatlander.colour = c; }
-    void RobotSurgeon::modifyPeakAngle(Isocele& i, const int a) { i.peakAngle = clamp(a, MAX_ANGLE, MIN_ANGLE); }
-    void RobotSurgeon::modifyNbSides(Polygon& p, const int n) { p.nbSides = clamp(n, MAX_NB_SIZE, MIN_NB_SIZE); }
+    void RobotSurgeon::modifyPeakAngle(Isocele& i, const int a)
+    {
+        if (a < MIN_ANGLE || a > MAX_ANGLE) {
+            throw invalid_intarg(a, MIN_ANGLE, MAX_ANGLE, "Isocele peak angle");
+        }
+        i.peakAngle = a;
+    }
+    void RobotSurgeon::modifyNbSides(Polygon& p, const int n)
+    {
+        if (n < MIN_NB_SIZE || n > MAX_NB_SIZE) {
+            throw invalid_intarg(n, MIN_NB_SIZE, MAX_NB_SIZE, "Polygon sides");
+        }
+        p.nbSides = n;
+    }
 
     void printStatistics()
     {
@@ -630,7 +663,10 @@ namespace flatland
     {
         // compound name from parents with a random number attached
         const std::string name = mother.getName() + "-" + father.getName() + std::to_string(randInt(1, 1'000'000));
-        int size = clamp((mother.getSize() + father.getSize()) / 2, MAX_SIZE, MIN_SIZE);
+        int size = (mother.getSize() + father.getSize()) / 2;
+        if (size < MIN_SIZE || size > MAX_SIZE) {
+            throw invalid_intarg(size, MIN_SIZE, MAX_SIZE, "Computed child size");
+        }
         Colour colour = randInt(0, 1) == 0 ? mother.getColour() : father.getColour();
 
         // 50% female -> Segment

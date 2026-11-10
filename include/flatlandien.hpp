@@ -156,9 +156,10 @@ namespace flatland
     };
 
     //-------------------------------------------------------------
-    // A generic predicate function for the find function
+    // Predicate functions
     //-------------------------------------------------------------
     using Predicate = bool(const Flatlander &, int, int);
+    using CompIfPredicate = bool(const Flatlander*, int);
 
     // ----------------------------------------------------------------------------
     // Family: aggregates a family, does not own any member of the family
@@ -234,5 +235,29 @@ namespace flatland
             std::cout << "none" << std::endl;
         }
     }
+
+    //---------------------------------------------------------------------
+    // A class that overloads the () operator
+    //---------------------------------------------------------------------
+    class BindSecond
+    {
+    public:
+        BindSecond(CompIfPredicate* pred, int v)
+            : pred{pred}, value{v}
+        {
+
+        }
+
+        // One argument function called by the std::find_if() function
+        // This is an overload of the () operator
+        bool operator()(const std::unique_ptr<Flatlander>& f) const
+        {
+            return pred(f.get(), value); // forwards to the two argument predicate
+        }
+
+    private:
+        CompIfPredicate* pred; // The function to call
+        int value; // The fixed second argument
+    };
 
 } // namespace flatland

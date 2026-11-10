@@ -3,9 +3,37 @@
 
 #include <random>
 #include <string>
+#include <stdexcept>
 
 namespace flatland
 {
+    /**
+     * Custom exception for invalid integer arguments.
+     * Extends std::invalid_argument to provide access to the invalid value
+     * and the permitted min/max range, allowing callers to correct the value.
+     */
+    class invalid_intarg : public std::invalid_argument {
+    public:
+        invalid_intarg(int invalid_value, int min_val, int max_val, const std::string& param_name);
+        int getInvalidValue() const { return invalid_value; }
+        int getMin() const { return min_val; }
+        int getMax() const { return max_val; }
+        const char* what() const noexcept override { return message.c_str(); }
+    private:
+        int invalid_value;
+        int min_val;
+        int max_val;
+        std::string message;
+    };
+
+    inline invalid_intarg::invalid_intarg(int invalid_value, int min_val, int max_val, const std::string& param_name)
+        : std::invalid_argument("")
+        , invalid_value(invalid_value)
+        , min_val(min_val)
+        , max_val(max_val)
+        , message(param_name + " value " + std::to_string(invalid_value) + " is out of range [" + std::to_string(min_val) + ", " + std::to_string(max_val) + "]")
+    {
+    }
     enum class Colour
     {
         WHITE,
@@ -50,7 +78,7 @@ namespace flatland
         if (value < min)
             return min;
         if (value > max)
-            return min;
+            return max;
         return value;
     }
 

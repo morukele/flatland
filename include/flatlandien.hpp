@@ -260,4 +260,43 @@ namespace flatland
         int value; // The fixed second argument
     };
 
+    //----------------------------------------------------------
+    // Association class.
+    // Template class that allows for different types of
+    // associations.
+    //----------------------------------------------------------
+    template <typename K>
+    class Association
+    {
+    public:
+        explicit Association(const std::string& n, int& cMin) : name{n}, minimumContribution{cMin}, totalContribution{0}{}
+        std::string getName() const {return name;}
+        void setName(const std::string &n) {name = n;}
+        int getMinimumContribution() const {return minimumContribution;}
+        void setMinimumContribution(int& c) {minimumContribution = c;}
+        bool registerMember(K* i, int& c)
+        {
+            if (c < minimumContribution)
+            {
+                // NB: uncomment if exception is the preferred way to go
+                // throw invalid_intarg(c, minimumContribution, 1'000'000, "Minimum contribution in Association");
+                std::cout << "Unable to register member because contribution -> "
+                    << c << " is less than minimum contribution -> "
+                    << minimumContribution << std::endl;
+                return false;
+            }
+            totalContribution += c;
+            members.push_back(i);
+            return true;
+        }
+        int getTotalContribution() const {return totalContribution;}
+        std::vector<K*> getMembers() const {return members;}
+
+    private:
+        std::string name;
+        int minimumContribution;
+        int totalContribution;
+        std::vector<K*> members;
+    };
+
 } // namespace flatland

@@ -1,4 +1,5 @@
 #include "flatlandien.hpp"
+#include "flatstream.hpp"
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -724,23 +725,49 @@ static void Q16()
     std::cout << "Member count: " << isoAssociation.getMembers().size() << std::endl;
 }
 
+static void Q17()
+{
+    constexpr std::string filename = "flatlander.txt";
+
+    Segment alice("Alice", 20, Colour::RED);
+    Isocele bob("Bob", 30, Colour::BLUE);
+    RobotSurgeon::modifyPeakAngle(bob, 45);
+    Polygon square("Square", 15, Colour::GREEN, 4);
+    Segment ghost("Ghost", 10, Colour::BLACK);
+    ghost.kill();
+
+    {
+        FlatOutputStream out(filename);
+        if (!out)
+        {
+            std::cerr << "Cannot open file for writing\n";
+        }
+        out.write(alice);
+        out.write(bob);
+        out.write(square);
+        out.write(ghost);
+    }
+
+    FlatInputStream in(filename);
+    if (!in)
+    {
+        std::cerr << "Cannot open file for reading\n";
+    }
+
+    std::vector<std::unique_ptr<Flatlander>> loaded;
+    while (std::unique_ptr<Flatlander> f = in.read())
+    {
+        loaded.push_back(std::move(f));
+    }
+
+    std::cout << "Read " << loaded.size() << " flatlanders:\n";
+    for (const auto& i : loaded)
+    {
+        std::cout << *i << '\n';
+    }
+}
+
 int main()
 {
-    // Run Q13 normally
-    Q13();
-
-    std::cout << std::endl;
-
-    // Test Association<Segment>
-    Q14();
-
-    std::cout << std::endl;
-
-    // Test Association<Polygon>
-    Q15();
-
-    std::cout << std::endl;
-
-    // Test Association<Isocele>
-    Q16();
+    Q17();
 }

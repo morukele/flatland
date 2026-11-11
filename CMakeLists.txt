@@ -3,6 +3,6 @@ project(flatland)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(flatland main.cpp src/flatlandien.cpp)
+add_executable(flatland main.cpp src/flatlandien.cpp src/flatstream.cpp)
 
 target_include_directories(flatland PRIVATE include)

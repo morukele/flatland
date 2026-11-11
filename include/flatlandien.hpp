@@ -170,7 +170,7 @@ namespace flatland
     class Family
     {
     public:
-        // Checks that the family complies with Flatlandian society rules
+        // Checks that the family complies with Flatlander society rules
         static Family newFamily(FlatlanderMale *f = nullptr, Segment *m = nullptr);
 
         ~Family();                                  // unregisters parents and children from static list
@@ -297,6 +297,30 @@ namespace flatland
         int minimumContribution;
         int totalContribution;
         std::vector<K*> members;
+    };
+
+    class Object
+    {
+    public:
+        explicit Object(std::string  id, bool isSharable = false);
+        ~Object(); // custom destructor
+        std::string getId() const;
+        bool getIsSharable() const;
+    private:
+        std::string id;
+        bool isSharable;
+    };
+
+    class Person
+    {
+    public:
+        explicit Person(std::string name);
+        bool give(Person& receiver);
+        bool borrow(std::unique_ptr<Object> obj);
+        void specifyObject();
+    private:
+        std::string name;
+        std::unique_ptr<Object> object; // unique pointer because the person can only own one object
     };
 
 } // namespace flatland

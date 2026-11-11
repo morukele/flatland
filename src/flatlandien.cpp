@@ -55,7 +55,8 @@ namespace flatland
     Flatlander::Flatlander(const std::string& n, const int s, const Colour c)
         : name{n}, size{s}, colour{c}
     {
-        if (s < MIN_SIZE || s > MAX_SIZE) {
+        if (s < MIN_SIZE || s > MAX_SIZE)
+        {
             throw invalid_intarg(s, MIN_SIZE, MAX_SIZE, "Flatlander size");
         }
     }
@@ -63,13 +64,16 @@ namespace flatland
     std::string Flatlander::getName() const { return name; }
     void Flatlander::setName(const std::string& n) { name = n; }
     int Flatlander::getSize() const { return size; }
+
     void Flatlander::setSize(const int s)
     {
-        if (s < MIN_SIZE || s > MAX_SIZE) {
+        if (s < MIN_SIZE || s > MAX_SIZE)
+        {
             throw invalid_intarg(s, MIN_SIZE, MAX_SIZE, "Flatlander size");
         }
         size = s;
     }
+
     Colour Flatlander::getColour() const { return colour; }
     void Flatlander::kill() { alive = false; }
     bool Flatlander::isAlive() const { return alive; }
@@ -96,7 +100,8 @@ namespace flatland
     Segment::Segment(const std::string& n, const int s, const Colour c)
         : Flatlander(n, s, c)
     {
-        if (s < MIN_SIZE || s > MAX_SIZE) {
+        if (s < MIN_SIZE || s > MAX_SIZE)
+        {
             throw invalid_intarg(s, MIN_SIZE, MAX_SIZE, "Segment size");
         }
         ++numberOfSegments;
@@ -113,7 +118,8 @@ namespace flatland
      */
     Isocele::Isocele(const std::string& n, int s, Colour c) : FlatlanderMale(n, s, c)
     {
-        if (s < MIN_SIZE || s > MAX_SIZE) {
+        if (s < MIN_SIZE || s > MAX_SIZE)
+        {
             throw invalid_intarg(s, MIN_SIZE, MAX_SIZE, "Isocele size");
         }
         peakAngle = randInt(MIN_ANGLE, MAX_ANGLE);
@@ -135,10 +141,12 @@ namespace flatland
         FlatlanderMale(n, s, c),
         nbSides{sides}
     {
-        if (s < MIN_SIZE || s > MAX_SIZE) {
+        if (s < MIN_SIZE || s > MAX_SIZE)
+        {
             throw invalid_intarg(s, MIN_SIZE, MAX_SIZE, "Polygon size");
         }
-        if (sides < MIN_NB_SIZE || sides > MAX_NB_SIZE) {
+        if (sides < MIN_NB_SIZE || sides > MAX_NB_SIZE)
+        {
             throw invalid_intarg(sides, MIN_NB_SIZE, MAX_NB_SIZE, "Polygon sides");
         }
         ++numberOfPolygon;
@@ -442,16 +450,20 @@ namespace flatland
 
     std::string RobotSurgeon::getName() const { return name; }
     void RobotSurgeon::modifyColour(Flatlander& flatlander, const Colour c) { flatlander.colour = c; }
+
     void RobotSurgeon::modifyPeakAngle(Isocele& i, const int a)
     {
-        if (a < MIN_ANGLE || a > MAX_ANGLE) {
+        if (a < MIN_ANGLE || a > MAX_ANGLE)
+        {
             throw invalid_intarg(a, MIN_ANGLE, MAX_ANGLE, "Isocele peak angle");
         }
         i.peakAngle = a;
     }
+
     void RobotSurgeon::modifyNbSides(Polygon& p, const int n)
     {
-        if (n < MIN_NB_SIZE || n > MAX_NB_SIZE) {
+        if (n < MIN_NB_SIZE || n > MAX_NB_SIZE)
+        {
             throw invalid_intarg(n, MIN_NB_SIZE, MAX_NB_SIZE, "Polygon sides");
         }
         p.nbSides = n;
@@ -664,7 +676,8 @@ namespace flatland
         // compound name from parents with a random number attached
         const std::string name = mother.getName() + "-" + father.getName() + std::to_string(randInt(1, 1'000'000));
         int size = (mother.getSize() + father.getSize()) / 2;
-        if (size < MIN_SIZE || size > MAX_SIZE) {
+        if (size < MIN_SIZE || size > MAX_SIZE)
+        {
             throw invalid_intarg(size, MIN_SIZE, MAX_SIZE, "Computed child size");
         }
         Colour colour = randInt(0, 1) == 0 ? mother.getColour() : father.getColour();
@@ -725,5 +738,50 @@ namespace flatland
         }
 
         return res;
+    }
+
+    Object::Object(std::string id, const bool isSharable) : id{id}, isSharable{isSharable}
+    {
+    }
+
+    Object::~Object() = default;
+
+    std::string Object::getId() const { return id; }
+    bool Object::getIsSharable() const { return isSharable; }
+
+    Person::Person(std::string name) : name{name}
+    {
+    }
+
+    bool Person::give(Person& receiver)
+    {
+        // check if giver has object to give
+        // check if receiver can receive object
+        if (object == nullptr || receiver.object != nullptr)
+        {
+            return false;
+        }
+        receiver.object = std::move(object);
+        return true;
+    }
+
+    bool Person::borrow(std::unique_ptr<Object> obj)
+    {
+        if (object != nullptr || obj == nullptr || !obj->getIsSharable())
+        {
+            return false;
+        }
+        object = std::move(obj);
+        return true;
+    }
+
+    void Person::specifyObject()
+    {
+        if (object == nullptr)
+        {
+            std::cout << name << " has no object" << std::endl;
+            return;
+        }
+        std::cout << name << " has object " << object->getId() << std::endl;
     }
 } // namespace flatland
